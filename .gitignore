@@ -1,0 +1,41 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter / IDE artifacts
+.ipynb_checkpoints/
+.idea/
+.vscode/
+
+# Generated experiment artifacts
+data_models_results/
+data/
+**/data/
+outputs/
+**/outputs/
+results/
+**/results/
+cache/
+temp_data/
+checkpoints/
+models/**
+**/models/**
+!models/.gitkeep
+!**/models/.gitkeep
+*.log
+*.tmp
+
+# Large generated result files; keep curated small examples intentionally.
+*.pt
+*.pth
+*.ckpt
+*.xlsx
+*.xls
+
+# OS metadata
+.DS_Store
+Thumbs.db

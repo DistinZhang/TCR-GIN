@@ -1,0 +1,156 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+TCR-GIN/model/tcr_gin.py
+
+Graph Isomorphism Network implementation used by the TCR-GIN training and
+evaluation scripts.
+
+Function
+--------
+This module defines the `TCR_GIN` model and its linear-layer initializer. The
+model supports Jumping Knowledge aggregation, optional virtual nodes, residual
+connections, configurable activation functions, and graph-level regression.
+
+Inputs
+------
+- An argument namespace with model hyperparameters such as `input_dim`,
+    `hidden_dim`, `num_layers`, `dropout`, `jk_type`, `use_virtual_node`,
+    `use_residual`, and `activation_fn`.
+- Batched PyTorch Geometric graph data containing `x`, `edge_index`, and
+    `batch` fields.
+
+Outputs
+-------
+- A tensor of shape `[batch_size, 1]` containing graph-level predictions.
+
+Usage
+-----
+Example:
+        from model.tcr_gin import TCR_GIN, init_weights
+
+        model = TCR_GIN(args)
+        model.apply(init_weights)
+        pred = model(batch)
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch_geometric.nn import GINConv, JumpingKnowledge
+from torch_geometric.nn import global_mean_pool, global_add_pool
+
+class TCR_GIN(nn.Module):
+    def __init__(self, args):
+        super(TCR_GIN, self).__init__()
+        self.args = args
+        self.num_layers = args.num_layers
+        self.hidden_dim = args.hidden_dim
+        self.dropout = args.dropout
+        self.jk_type = args.jk_type
+        self.use_virtual_node = args.use_virtual_node
+        self.use_residual = args.use_residual
+        
+        if args.activation_fn.lower() == 'gelu':
+            self.activation_module = nn.GELU()
+        elif args.activation_fn.lower() == 'relu':
+            self.activation_module = nn.ReLU()
+        else:
+            raise ValueError(f"Unsupported activation function: {args.activation_fn}")
+
+        self.input_proj = nn.Linear(args.input_dim, self.hidden_dim)
+
+        if self.use_virtual_node:
+            self.virtual_node_embedding = nn.Embedding(1, self.hidden_dim)
+            self.mlp_virtual_node_list = nn.ModuleList()
+            for _ in range(self.num_layers):
+                self.mlp_virtual_node_list.append(
+                    nn.Sequential(
+                        nn.Linear(self.hidden_dim, self.hidden_dim * 2),
+                        nn.BatchNorm1d(self.hidden_dim * 2),
+                        self.activation_module,
+                        nn.Linear(self.hidden_dim * 2, self.hidden_dim),
+                        nn.BatchNorm1d(self.hidden_dim),
+                        self.activation_module
+                    )
+                )
+
+        self.convs = nn.ModuleList()
+        self.batch_norms = nn.ModuleList()
+        for _ in range(self.num_layers):
+            self.convs.append(self.make_gin_conv(self.hidden_dim, self.hidden_dim))
+            self.batch_norms.append(nn.BatchNorm1d(self.hidden_dim))
+
+        self.pool = global_mean_pool
+
+        if self.jk_type in ['cat', 'max', 'lstm']:
+            self.jk_layer = JumpingKnowledge(mode=self.jk_type, channels=self.hidden_dim, num_layers=self.num_layers)
+        elif self.jk_type == 'last':
+            self.jk_layer = None
+        else:
+            raise ValueError(f"Unsupported jk_type: '{self.jk_type}'")
+
+        if self.jk_type == 'cat':
+            mlp_input_dim = self.hidden_dim * self.num_layers
+        else:
+            mlp_input_dim = self.hidden_dim
+        
+        self.prediction_head = nn.Sequential(
+            nn.Linear(mlp_input_dim, self.hidden_dim),
+            self.activation_module,
+            nn.Dropout(self.dropout),
+            nn.Linear(self.hidden_dim, 1)
+        )
+
+    def make_gin_conv(self, input_dim, output_dim):
+        return GINConv(
+            nn.Sequential(
+                nn.Linear(input_dim, output_dim),
+                self.activation_module,
+                nn.Linear(output_dim, output_dim)
+            )
+        )
+
+    def forward(self, batched_data):
+        x, edge_index, batch = batched_data.x, batched_data.edge_index, batched_data.batch
+        h = self.input_proj(x)
+
+        if self.use_virtual_node:
+            virtual_node_feat = self.virtual_node_embedding(
+                torch.zeros(batch.max().item() + 1, dtype=torch.long, device=x.device)
+            )
+
+        layer_outputs = []
+        for i in range(self.num_layers):
+            if self.use_virtual_node:
+                h = h + virtual_node_feat[batch]
+
+            h_prev = h
+            h = self.convs[i](h, edge_index)
+            h = self.batch_norms[i](h)
+            h = self.activation_module(h)
+
+            if self.use_residual and h.shape == h_prev.shape:
+                h = h + h_prev
+
+            layer_outputs.append(h)
+
+            if self.use_virtual_node and i < self.num_layers - 1:
+                aggregated_graph_feat = global_add_pool(h, batch)
+                virtual_node_feat = virtual_node_feat + self.mlp_virtual_node_list[i](aggregated_graph_feat)
+        
+        if self.jk_layer is not None:
+            node_representation = self.jk_layer(layer_outputs)
+        else:
+            node_representation = layer_outputs[-1]
+
+        graph_representation = self.pool(node_representation, batch)
+        prediction = self.prediction_head(graph_representation)
+
+        return prediction.view(-1, 1)
+
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        nn.init.xavier_uniform_(m.weight.data)
+        if m.bias is not None:
+            m.bias.data.fill_(0.0)

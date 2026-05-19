@@ -1,0 +1,40 @@
+
+dismantling_data_dir: "/root/autodl-tmp/data_trajectory/power" 
+output_dir: "../../results/sensitivity/results-power+LBWE-sensitivity"
+dataset_type: "multi-network"
+
+prediction_strategy: "component_aware" 
+
+monotonicity_test:
+  tolerance: '0.01'  
+
+test_type: "multi_param"
+
+model_suite:
+  - name: "Base-Model-0-200"
+    node_range: [0, 300]
+    base_dir: "../../models/sensitivity-models/power/20-200-power+LBWE"
+
+  - name: "Base-Model-300-600"
+    node_range: [300, 700]
+    base_dir: "../../models/sensitivity-models/power/300-600-power+LBWE"
+
+  - name: "Base-Model-700-1100"
+    node_range: [700, 1200]
+    base_dir: "../../models/sensitivity-models/power/700-1100-power+LBWE"
+
+base_model_params:
+  num_layers: 5
+  hidden_dim: 128
+  dropout: 0.2
+  jk_type: 'lstm'
+  use_virtual_node: True
+  use_residual: True
+  activation_fn: 'gelu'
+  consistency_lambda: 0.2
+  piss_k: 1
+  input_dim: 7
+  feature_dim: 3
+
+plotting:
+  enabled: false

@@ -1,0 +1,32 @@
+base_config:
+  global_settings:
+    output_dir: "experiments/baseline_comparison/real_generalization/results"
+    output_filename: "LBWE_real_results.csv"
+    baselines_root_dir: "/root/autodl-tmp/data_real"
+    datasets_root_dir: "/root/autodl-tmp"
+    models_root_dir: "models"
+    device: "auto"
+
+  feature_dim: 3
+  model_params:
+    num_layers: 5
+    hidden_dim: 128
+    dropout: 0.2
+    jk_type: "lstm"
+    use_virtual_node: true
+    use_residual: true
+    activation_fn: "gelu"
+
+experiment_groups:
+  - name: "Generalization to REDDIT"
+    training_sources:
+      - name: "300-600-LBWE"
+        constituents: ["300", "400", "500", "600"]
+
+    testing_targets:
+      - name: "REDDIT"
+        baseline_source: "REDDIT"
+
+    single_source_model_path_template: "base-models/{dataset_name}/MIX"
+    multi_source_model_path_template: "multisource-models/{dataset_name}"
+    real_dataset_path_template: "split/{dataset_name}/{dataset_name}-{dataset_name}/test"

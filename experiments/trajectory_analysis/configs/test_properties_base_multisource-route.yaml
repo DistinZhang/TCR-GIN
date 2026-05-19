@@ -1,0 +1,42 @@
+
+dismantling_data_dir: "/root/autodl-tmp/data_trajectory/route" 
+output_dir: "../results/results-route+LBWE"
+dataset_type: "multi-network"
+prediction_strategy: "component_aware" 
+
+monotonicity_test:
+  tolerance: '0.01'  
+
+test_type: "single_param" 
+
+model_suite:
+  - name: "Base-Model-0-200"
+    node_range: [0, 300]
+    base_dir: "../models/multisource-models/route/20-200-route+LBWE"
+
+  - name: "Base-Model-300-600"
+    node_range: [300, 700]
+    base_dir: "../models/multisource-models/route/300-600-route+LBWE"
+
+  - name: "Base-Model-700-1000"
+    node_range: [700, 1100]
+    base_dir: "../models/multisource-models/route/700-1000-route+LBWE"
+
+  - name: "Base-Model-1100-1900"
+    node_range: [1100, 2000]
+    base_dir: "../models/multisource-models/route/1100-1900-route+LBWE"
+    
+base_model_params:
+  num_layers: 5
+  hidden_dim: 128
+  dropout: 0.2
+  jk_type: 'lstm'
+  use_virtual_node: True
+  use_residual: True
+  activation_fn: 'gelu'
+  input_dim: 7
+  feature_dim: 3
+
+plotting:
+  enabled: true
+

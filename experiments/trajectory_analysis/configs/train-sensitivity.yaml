@@ -1,0 +1,64 @@
+# TCR-GIN/experiments/trajectory_analysis/configs/train-sensitivity.yaml
+#
+# Sensitivity analysis for trajectory analysis experiments.  Runs a
+# parameter grid search over dynamically assembled datasets that combine
+# real-world networks (power, london) with synthetic generators (LFR, BA,
+# WS, ER).  The sensitivity_grid is decoupled from the data definition.
+
+master_data_root: "/root/autodl-tmp/split"
+
+base_config:
+  run_control: { seed: 42, device: "cuda", num_runs: 5, use_tqdm: false }
+  model: { feature_dim: 3, input_dim: 7, hidden_dim: 128, num_layers: 5, dropout: 0.2, jk_type: "lstm", use_virtual_node: true, use_residual: true, activation_fn: 'gelu' }
+  training: { epochs: 200, batch_size: 128, num_workers: 8, lr: 0.001, l2_reg: 0.0001, use_lr_scheduler: true, warmup_epochs: 10, min_lr: 1.0e-05, eval_steps: 1, monitor_metric: "mae", early_stop_patience: 40 }
+  piss: { consistency_lambda: 0.2, piss_k: 1 }
+  dataset: { rebuild_cache: false }
+  output: { output_dir: "experiments/trajectory_analysis/outputs/", model_dir: "experiments/trajectory_analysis/models/" }
+
+experiments:
+  - name: "Sensitivity_On_Combined_Data"
+    dataset:
+      type: dynamic_source
+      instances:
+        # Power grid + synthetic generators
+        - mix_id: "20-200-power+LBWE"
+          sources:
+            - base_dirs: ["20-40", "40-100", "100", "200"]
+              generators: ["power", "LFR", "BA", "WS", "ER"]
+              sampling: { train: 99999, val: 99999, test: 99999 }
+        - mix_id: "300-600-power+LBWE"
+          sources:
+            - base_dirs: ["300", "400", "500", "600"]
+              generators: ["power", "LFR", "BA", "WS", "ER"]
+              sampling: { train: 99999, val: 99999, test: 99999 }
+        - mix_id: "700-1100-power+LBWE"
+          sources:
+            - base_dirs: ["700", "800", "900", "1000", "1100"]
+              generators: ["power", "LFR", "BA", "WS", "ER"]
+              sampling: { train: 99999, val: 99999, test: 99999 }
+
+        # London transport + synthetic generators
+        - mix_id: "20-100-london+LBWE"
+          sources:
+            - base_dirs: ["20-40", "40-100"]
+              generators: ["london", "LFR", "BA", "WS", "ER"]
+              sampling: { train: 99999, val: 99999, test: 99999 }
+        - mix_id: "100-300-london+LBWE"
+          sources:
+            - base_dirs: ["100", "200", "300"]
+              generators: ["london", "LFR", "BA", "WS", "ER"]
+              sampling: { train: 99999, val: 99999, test: 99999 }
+        - mix_id: "20-300-london+LBWE"
+          sources:
+            - base_dirs: ["20-40", "40-100", "100", "200", "300"]
+              generators: ["london", "LFR", "BA", "WS", "ER"]
+              sampling: { train: 99999, val: 99999, test: 99999 }
+
+      templates:
+        temp_data_dir: "temp_data/sensitive_{mix_id}"
+        dataset.cache_path: "cache/sensitive_{mix_id}"
+
+    sensitivity_grid:
+      piss.piss_k: [3, 5]
+      piss.consistency_lambda: [0.5, 0.8]
+      model.feature_dim: [5, 7]

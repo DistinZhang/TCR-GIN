@@ -1,0 +1,38 @@
+# TCR-GIN/experiments/baseline_comparison/ablation/configs/test_ablation_REDDIT.yaml
+
+base_config:
+  global_settings:
+    output_dir: 'experiments/baseline_comparison/ablation/results'
+    output_filename: 'test_ablation_REDDIT.csv'
+    datasets_root_dir: '/root/autodl-tmp/split/'
+    models_root_dir: 'models/'
+    device: 'auto'
+
+  sampling:
+    test_limit: -1
+
+  model_params:
+    feature_dim: 3
+    input_dim: 7
+    hidden_dim: 128
+    num_layers: 5
+    dropout: 0.2
+    use_residual: true
+    jk_type: "lstm"
+    use_virtual_node: true
+    activation_fn: 'gelu'
+
+experiments:
+  - name: "Ablation Test Group"
+    templates:
+      m_path: "ablation-models/{mix_id}"
+      d_path: "{scale}/{generator}-{scale}/test"
+
+    instances:
+      - mix_id: "300-600-REDDIT"
+        source_scales: ["REDDIT"]
+        source_generators: ["REDDIT"]
+
+# Run:
+# python experiments/baseline_comparison/ablation/test_ablation.py \
+#   --config experiments/baseline_comparison/ablation/configs/test_ablation_REDDIT.yaml

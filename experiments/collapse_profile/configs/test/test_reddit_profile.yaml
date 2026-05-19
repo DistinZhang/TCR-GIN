@@ -1,0 +1,75 @@
+
+# ============================================================
+# Test Config — REDDIT-profile
+# ============================================================
+experiment_name: reddit_profile
+model_dir: experiments/collapse_profile/models
+num_runs: 5
+test_runs: all
+
+# --- Test data ---
+dataset_name: reddit_profile
+test_path: /root/autodl-tmp/profile/REDDIT-profile
+
+# --- Output ---
+result_dir: experiments/collapse_profile/results
+cache_path: experiments/collapse_profile/cache/test
+
+# --- Model architecture (MUST match training) ---
+input_dim: 3
+feature_dim: 3
+hidden_dim: 128
+num_layers: 5
+dropout: 0.3
+jk_type: lstm
+use_virtual_node: true
+use_residual: true
+activation_fn: gelu
+
+# --- Label config ---
+label_suffix: _profile_label.json
+label_tau_key: tau_grid_full
+label_profile_key: collapse_profile_full
+label_scale: 1.0
+
+# --- Tau grid (MUST match training) ---
+tau:
+  values: [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]
+
+# --- Inference ---
+device: cuda
+batch_size: 32
+num_workers: 4
+seed: 42
+
+# ── Baseline comparison ──
+baseline_dir: /root/autodl-tmp/profile/baseline/REDDIT-profile
+baseline_algorithms:
+  - degree_centrality_dynamic
+  - betweenness_centrality_dynamic
+  - degree_centrality
+  - betweenness_centrality_T
+  - CoreHD
+  - FINDER_CN
+  - GND
+  - GNDR
+  - CollectiveInfluenceL1
+  - CollectiveInfluenceL2
+  - CollectiveInfluenceL3
+  - CoreGDM
+  - Domirank
+  - EGND
+  - EI_s1
+  - EI_s2
+  - GDM
+  - GDMR
+  - MS
+  - MSR
+  - network_entanglement_large
+  - network_entanglement_large_reinsertion
+  - network_entanglement_mid
+  - network_entanglement_mid_reinsertion
+  - network_entanglement_small
+  - network_entanglement_small_reinsertion
+  - vertex_entanglement
+  - vertex_entanglement_reinsertion
