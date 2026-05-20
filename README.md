@@ -69,7 +69,7 @@ the repository under `../data_models_results/` before deposition.
 After publication, cite the archive as:
 
 ```text
-Zenodo DOI: to be added after deposition
+Zenodo DOI: 10.5281/zenodo.20287619
 ```
 
 After downloading the archive, place or symlink the data, model/checkpoint, and
@@ -144,7 +144,7 @@ python experiments/baseline_comparison/test_performance.py --config experiments/
 python experiments/baseline_comparison/test_performance.py --config experiments/baseline_comparison/configs/test_multisource-REDDIT-GPU.yaml
 python experiments/baseline_comparison/plot3.py
 
-# Fig. 4
+# Fig. 4 and Fig. 5
 python experiments/trajectory_analysis/test_properties.py --config experiments/trajectory_analysis/configs/test_properties_base_multisource-BA100.yaml
 python experiments/trajectory_analysis/test_properties.py --config experiments/trajectory_analysis/configs/test_properties_base_multisource-LFR100.yaml
 python experiments/trajectory_analysis/test_properties.py --config experiments/trajectory_analysis/configs/test_properties_base_multisource-london.yaml
