@@ -13,13 +13,8 @@ import json
 import torch
 from pathlib import Path
 from typing import Dict, Tuple, Optional, Any
-import sys
 
-# Add project root to path
-project_root = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(project_root))
-
-from model.tcr_gin import TCR_GIN
+from webapp.core.tcr_gin import TCR_GIN
 from argparse import Namespace
 from torch_geometric.data import Batch
 
