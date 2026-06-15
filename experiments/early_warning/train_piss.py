@@ -5,23 +5,6 @@ TCR-GIN/experiments/early_warning/train_piss.py
 
 Training entry for the early-warning PISS/TI-GIN pipeline.
 
-Function
---------
-This script trains the early-warning model with scaled labels, AMP support,
-PISS-style consistency loss, checkpointing, validation, and final testing.
-
-Inputs
-------
-- `--config`: YAML training configuration.
-- Dataset, model, training, and output parameters supplied by the config file
-    or command-line overrides.
-
-Outputs
--------
-- Training logs in the configured output directory.
-- Best model checkpoints in the configured model directory.
-- Per-run metrics JSON files.
-
 Example:
     python experiments/early_warning/train_piss.py --config path/to/config.yaml
 """
@@ -35,6 +18,14 @@ import json
 import shutil
 from pathlib import Path
 
+# ==============================================================================
+# Path import fix
+# ==============================================================================
+# Current file:
+#   TCR-GIN/experiments/early_warning/train_piss.py
+# current_dir       -> TCR-GIN/experiments/early_warning
+# current_dir.parent -> TCR-GIN/experiments
+# current_dir.parent.parent -> TCR-GIN
 current_dir = Path(__file__).resolve().parent
 project_root = current_dir.parent.parent
 
@@ -131,7 +122,7 @@ def train_epoch_piss(model, dataloader, optimizer, scheduler, device, epoch, arg
             pred_anchor_norm = model(batch_anchor)
             anchor_loss = F.mse_loss(pred_anchor_norm, target_norm)
 
-            # 3. Prepare consistency loss
+            # 3. Prepare Consistency Loss
             with torch.no_grad():
                 N0 = scatter(
                     torch.ones_like(batch_anchor.batch, dtype=torch.float),
@@ -173,7 +164,7 @@ def train_epoch_piss(model, dataloader, optimizer, scheduler, device, epoch, arg
                 scaler.step(optimizer)
                 scaler.update()
 
-                # Restore original-scale values for logs and metrics: pred / S
+                # Restore true values for logging and metrics: pred / S
                 pred_real = pred_anchor_norm.detach() / scale_factor
                 all_preds_real.append(pred_real.float())
                 all_targets_real.append(target_real.detach().float())
@@ -267,7 +258,7 @@ def train_epoch_piss(model, dataloader, optimizer, scheduler, device, epoch, arg
         total_anchor_loss += anchor_loss.item() * B
         total_consist_loss += consist_loss.item() * valid_count
 
-        # Restore original scale: pred / S
+        # restore: pred / S
         pred_anchor_real = pred_anchor_norm.detach() / scale_factor
         all_preds_real.append(pred_anchor_real.float())
         all_targets_real.append(target_real.detach().float())
@@ -302,7 +293,7 @@ def validate(model, dataloader, device, label_stats):
     total_loss = 0
     all_preds_real, all_targets_real = [], []
 
-    # Get the scaling factor from label_stats.
+    # [Modified] get scaling factor from label_stats
     scale_factor = label_stats['scale_factor']
 
     with torch.no_grad():
@@ -379,7 +370,7 @@ def main():
     )
     logger.info(f"Data loaded. Train samples: {len(train_loader.dataset)}")
 
-    # Compute label statistics with the parsed arguments.
+    # [Modified] Compute Stats (pass args)
     label_stats = compute_label_stats(train_loader, args)
 
     with open(os.path.join(output_dir, 'label_stats.json'), 'w') as f:

@@ -1,0 +1,14 @@
+{
+  "critical_threshold": 0.4375,
+  "removed_nodes": [
+    15,
+    2,
+    8,
+    1,
+    12,
+    7,
+    6
+  ],
+  "num_nodes": 16,
+  "num_edges": 38
+}

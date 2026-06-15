@@ -237,6 +237,23 @@ warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 # Section 1. Algorithm Naming and Styles
 # =============================================================================
 
+# Network name mapping: remnant directory name -> CSV network name
+NETWORK_NAME_MAPPING = {
+    "transport": "london_transport_multiplex_aggr",
+    "power": "power-eris1176",
+    "route": "route-views",
+}
+
+
+def _convert_seq_id_for_csv(seq_id: str) -> str:
+    """Convert short seq_id (from remnant files) to full CSV network name format."""
+    base_network = seq_id.split("-")[0]
+    if base_network in NETWORK_NAME_MAPPING:
+        csv_network_name = NETWORK_NAME_MAPPING[base_network]
+        strategy_part = seq_id.split("-", 1)[1] if "-" in seq_id else ""
+        return f"{csv_network_name}-{strategy_part}" if strategy_part else csv_network_name
+    return seq_id
+
 FILENAME_TO_SHORT_NAME = {
     "CollectiveInfluenceL1": r"CI $\ell$-1",
     "CollectiveInfluenceL2": r"CI $\ell$-2",
@@ -636,7 +653,7 @@ def prepare_and_predict_all_graphs(
             model_remnant = get_model_for_graph(g_remnant, model_suite, run_idx)
             if model_remnant:
                 batch_remnant = Batch.from_data_list([g_remnant]).to(device)
-                pred_holistic = float(model_remnant(batch_remnant).item())
+                pred_holistic = float(torch.clamp(model_remnant(batch_remnant), 0.0, 1.0).item())
 
             pred_aggregated = pred_holistic
             if force_component_aware and NETWORKX_ENABLED and g_remnant.num_edges > 0:
@@ -658,7 +675,7 @@ def prepare_and_predict_all_graphs(
                             continue
 
                         batch_comp = Batch.from_data_list([sub_g]).to(device)
-                        pred_comp = float(model_comp(batch_comp).item())
+                        pred_comp = float(torch.clamp(model_comp(batch_comp), 0.0, 1.0).item())
                         total_weighted_pred += pred_comp * sub_g.num_nodes
 
                     pred_aggregated = total_weighted_pred / total_nodes if total_nodes > 0 else 0.0
@@ -744,7 +761,18 @@ def test_monotonicity(
     for graph_id in prediction_cache.keys():
         match = re.match(r"(.+)_(\d+)$", graph_id)
         if match:
-            seq_id, step = match.groups()
+            full_seq_id, step = match.groups()
+
+            # Convert seq_id to match CSV network names
+            # e.g., transport-degree → london_transport_multiplex_aggr-degree
+            base_network = full_seq_id.split("-")[0]
+            if base_network in NETWORK_NAME_MAPPING:
+                csv_network_name = NETWORK_NAME_MAPPING[base_network]
+                strategy_part = full_seq_id.split("-", 1)[1] if "-" in full_seq_id else ""
+                seq_id = f"{csv_network_name}-{strategy_part}" if strategy_part else csv_network_name
+            else:
+                seq_id = full_seq_id
+
             sequences[seq_id].append(int(step))
 
     all_metrics: Dict[str, List[float]] = defaultdict(list)
@@ -895,8 +923,9 @@ def _get_initial_size_for_sequence(
     if "route" in seq_id.lower():
         return 6474
 
+    seq_id_for_csv = _convert_seq_id_for_csv(seq_id)
     for df in traditional_data.values():
-        initial_rows = df[(df["seq_id"] == seq_id) & (df["step"] == 0)]
+        initial_rows = df[(df["seq_id"] == seq_id_for_csv) & (df["step"] == 0)]
         if not initial_rows.empty:
             return int(initial_rows["network_size"].iloc[0])
 
@@ -979,12 +1008,13 @@ def _find_zoom_region(
         current_score = 0.0
         count_valid_baselines = 0
 
+        seq_id_for_csv = _convert_seq_id_for_csv(seq_id)
         for algo in FIXED_ZOOM_BASELINES:
             if algo not in traditional_data:
                 continue
 
             df = traditional_data[algo]
-            seq_df = df[df["seq_id"] == seq_id].set_index("step")
+            seq_df = df[df["seq_id"] == seq_id_for_csv].set_index("step")
             common_idx = seq_df.index.intersection(win_steps)
             if len(common_idx) < 2:
                 continue
@@ -1047,11 +1077,12 @@ def _collect_zoom_metadata(
 
         n_initial = _get_initial_size_for_sequence(seq_id, traditional_data, dataset_name)
         if n_initial:
+            seq_id_for_csv = _convert_seq_id_for_csv(seq_id)
             for algo_name in FIXED_ZOOM_BASELINES:
                 if algo_name not in traditional_data:
                     continue
                 df = traditional_data[algo_name]
-                seq_df = df[df["seq_id"] == seq_id].sort_values("step")
+                seq_df = df[df["seq_id"] == seq_id_for_csv].sort_values("step")
                 z_b = seq_df[(seq_df["step"] >= x_start) & (seq_df["step"] <= x_end)]
                 if not z_b.empty:
                     d_norm = z_b["critical_threshold"] * z_b["network_size"] / n_initial
@@ -1097,11 +1128,12 @@ def _plot_monotonicity_inset(
         inset_style["linewidth"] = max(1.0, tcr_gin_style.get("linewidth", 1.0))
         ax_inset.plot(plot_data[seq_id]["steps"], plot_data[seq_id]["d_norm"], **inset_style)
 
+    seq_id_for_csv = _convert_seq_id_for_csv(seq_id)
     for algo_name in FIXED_ZOOM_BASELINES:
         if algo_name not in traditional_data:
             continue
         df = traditional_data[algo_name]
-        seq_df = df[df["seq_id"] == seq_id].sort_values("step")
+        seq_df = df[df["seq_id"] == seq_id_for_csv].sort_values("step")
         z_b = seq_df[(seq_df["step"] >= x_start) & (seq_df["step"] <= x_end)]
         if not z_b.empty:
             d_norm = z_b["critical_threshold"] * z_b["network_size"] / n_init
@@ -1360,11 +1392,12 @@ def plot_monotonicity_monochrome_panels(
             ax.set_title("")
             global_subplot_index += 1
 
+            seq_id_for_csv = _convert_seq_id_for_csv(seq_id)
             local_max_x = 0
             if seq_id in plot_data and plot_data[seq_id]["steps"]:
                 local_max_x = max(local_max_x, max(plot_data[seq_id]["steps"]))
             for df in traditional_data.values():
-                seq_df = df[df["seq_id"] == seq_id]
+                seq_df = df[df["seq_id"] == seq_id_for_csv]
                 if not seq_df.empty:
                     local_max_x = max(local_max_x, int(seq_df["step"].max()))
 
@@ -1379,7 +1412,7 @@ def plot_monotonicity_monochrome_panels(
                 continue
 
             for algo_name, df in traditional_data.items():
-                seq_df = df[df["seq_id"] == seq_id].sort_values("step")
+                seq_df = df[df["seq_id"] == seq_id_for_csv].sort_values("step")
                 if not seq_df.empty:
                     d_norm = seq_df["critical_threshold"] * seq_df["network_size"] / n_initial
                     style = baseline_styles.get(algo_name, ALGO_STYLES["default"])
@@ -1535,11 +1568,12 @@ def plot_monotonicity_large_scale_panels(
             if not n_initial:
                 continue
 
+            seq_id_for_csv = _convert_seq_id_for_csv(seq_id)
             current_max_x = 0
             if seq_id in plot_data and plot_data[seq_id]["steps"]:
                 current_max_x = max(current_max_x, max(plot_data[seq_id]["steps"]))
             for df in traditional_data.values():
-                seq_df = df[df["seq_id"] == seq_id]
+                seq_df = df[df["seq_id"] == seq_id_for_csv]
                 if not seq_df.empty:
                     current_max_x = max(current_max_x, int(seq_df["step"].max()))
 
@@ -1552,7 +1586,7 @@ def plot_monotonicity_large_scale_panels(
                     all_handles["TCR-GIN"] = h
 
             for algo_name, df in traditional_data.items():
-                seq_df = df[df["seq_id"] == seq_id].sort_values("step")
+                seq_df = df[df["seq_id"] == seq_id_for_csv].sort_values("step")
                 if not seq_df.empty:
                     d_norm = seq_df["critical_threshold"] * seq_df["network_size"] / n_initial
                     style = baseline_styles.get(algo_name, ALGO_STYLES["default"])
@@ -1729,11 +1763,12 @@ def plot_monotonicity_colored_panels(
         ax.text(0.0, 1.05, title_label, transform=ax.transAxes, fontsize=FONT_SIZE_MAIN, fontweight="bold", va="bottom", ha="left")
         ax.set_title("")
 
+        seq_id_for_csv = _convert_seq_id_for_csv(seq_id)
         local_max_x = 0
         if seq_id in plot_data and plot_data[seq_id]["steps"]:
             local_max_x = max(local_max_x, max(plot_data[seq_id]["steps"]))
         for df in traditional_data.values():
-            seq_df = df[df["seq_id"] == seq_id]
+            seq_df = df[df["seq_id"] == seq_id_for_csv]
             if not seq_df.empty:
                 local_max_x = max(local_max_x, int(seq_df["step"].max()))
 
@@ -1746,7 +1781,7 @@ def plot_monotonicity_colored_panels(
         n_initial = _get_initial_size_for_sequence(seq_id, traditional_data, dataset_name)
         if n_initial:
             for algo_name, df in traditional_data.items():
-                seq_df = df[df["seq_id"] == seq_id].sort_values("step")
+                seq_df = df[df["seq_id"] == seq_id_for_csv].sort_values("step")
                 if not seq_df.empty:
                     d_norm = seq_df["critical_threshold"] * seq_df["network_size"] / n_initial
                     style = baseline_styles.get(algo_name, ALGO_STYLES["default"])
@@ -2073,7 +2108,7 @@ def run_evaluation_job(
         config_filename = Path(config.get("__file_path__", "")).name
         target_configs = {
             "test_properties_base_multisource-power.yaml",
-            "test_properties_base_multisource-london.yaml",
+            "test_properties_base_multisource-transport.yaml",
         }
         if config_filename in target_configs:
             mono_color_dir = config["output_dir"] / "monotonicity_plots_colored"

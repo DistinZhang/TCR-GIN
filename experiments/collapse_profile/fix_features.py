@@ -5,8 +5,8 @@ Fix feature files: ensure feature rows cover ALL node IDs in edges.
 For isolated nodes (not in any edge), features are set to 0.
 
 Usage:
-    python fix_features.py --data_dir /root/autodl-tmp/ERGM/split-ergm/london --feature_set full
-    python fix_features.py --data_dir /root/autodl-tmp/ERGM/split-ergm/london --feature_set full --dry_run
+    python fix_features.py --data_dir /root/autodl-tmp/ERGM/split-ergm/transport --feature_set full
+    python fix_features.py --data_dir /root/autodl-tmp/ERGM/split-ergm/transport --feature_set full --dry_run
 """
 
 import argparse
@@ -174,7 +174,7 @@ def fix_directory(data_dir, feature_set, dry_run=False):
 def main():
     parser = argparse.ArgumentParser(description="Fix feature files for ERGM datasets")
     parser.add_argument("--data_dir", type=str, required=True,
-                        help="Root directory (e.g., /root/autodl-tmp/ERGM/split-ergm/london)")
+                        help="Root directory (e.g., /root/autodl-tmp/ERGM/split-ergm/transport)")
     parser.add_argument("--feature_set", type=str, default="full",
                         choices=["basic", "extended", "full"],
                         help="Feature set to compute (must match what training expects)")

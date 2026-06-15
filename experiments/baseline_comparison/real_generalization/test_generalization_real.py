@@ -338,7 +338,7 @@ def run_gnn_exp(task_config: Dict[str, Any]) -> List[Dict[str, Any]]:
                 data.batch = torch.zeros(data.num_nodes, dtype=torch.long, device=device)
 
                 with torch.no_grad():
-                    y_pred = float(model(data).item())
+                    y_pred = float(torch.clamp(model(data), 0.0, 1.0).item())
 
                 preds.append(y_pred)
                 truths.append(float(truth))

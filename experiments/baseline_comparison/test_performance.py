@@ -605,7 +605,7 @@ def run_single_experiment(
                 t_infer_start = time.perf_counter()
 
                 with torch.no_grad():
-                    y_pred = float(model(graph_data).item())
+                    y_pred = float(torch.clamp(model(graph_data), 0.0, 1.0).item())
 
                 t_infer_end = time.perf_counter()
 
@@ -810,7 +810,7 @@ def export_time_scaling_outputs(raw_rows: List[Dict[str, Any]], out_dir: Path) -
 
     raw_df = pd.DataFrame(raw_rows)
 
-    # Keep the original filename for compatibility; the contents are no longer inference-only.
+    # Keep original filename for compatibility, but content is no longer inference-only
     raw_path = out_dir / "raw_edge_time_details-only-inf.csv"
     raw_df.to_csv(raw_path, index=False)
     print(f"[INFO] Individual network details saved to: {raw_path}")

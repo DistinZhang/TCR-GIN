@@ -112,7 +112,8 @@ def parse_args():
     parser.add_argument(
         '--activation_fn',
         type=str,
-        help='[Ablation] Activation function: relu or gelu.'
+        default='gelu',
+        help='[Ablation] Activation function: relu, gelu, or sigmoid.'
     )
 
     # --------------------------------------------------------------------------

@@ -60,22 +60,22 @@ OUTPUT_DIR = SCRIPT_DIR / "results" / "robustness_metrics"
 # ==============================================================================
 SCENARIOS = [
     {
-        'csv': SCRIPT_DIR / 'results/robustness_metrics/london-111/london_111_metrics.csv',
+        'csv': SCRIPT_DIR / 'results/robustness_metrics/transport-111/transport_111_metrics.csv',
         'algo': 'DC',
         'target': 0.3
     },
     {
-        'csv': SCRIPT_DIR / 'results/robustness_metrics/london-111/london_111_metrics.csv',
+        'csv': SCRIPT_DIR / 'results/robustness_metrics/transport-111/transport_111_metrics.csv',
         'algo': 'BC',
         'target': 0.3
     },
     {
-        'csv': SCRIPT_DIR / 'results/robustness_metrics/london-185/london_185_metrics.csv',
+        'csv': SCRIPT_DIR / 'results/robustness_metrics/transport-185/transport_185_metrics.csv',
         'algo': 'DC',
         'target': 0.5
     },
     {
-        'csv': SCRIPT_DIR / 'results/robustness_metrics/london-185/london_185_metrics.csv',
+        'csv': SCRIPT_DIR / 'results/robustness_metrics/transport-185/transport_185_metrics.csv',
         'algo': 'BC',
         'target': 0.5
     },

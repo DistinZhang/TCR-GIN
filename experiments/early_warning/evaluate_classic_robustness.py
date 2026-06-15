@@ -753,7 +753,9 @@ class TCRGINPredictor:
             batch = Batch.from_data_list([data]).to(self.device)
             with torch.no_grad():
                 pred_norm = model(batch).item()
-            return max(0.001, pred_norm / scale)
+            pred_real = pred_norm / scale
+            pred_real = max(0.0, min(1.0, pred_real))
+            return max(0.001, pred_real)
         except Exception:
             return 0.0
 

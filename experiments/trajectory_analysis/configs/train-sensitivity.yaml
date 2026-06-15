@@ -2,7 +2,7 @@
 #
 # Sensitivity analysis for trajectory analysis experiments.  Runs a
 # parameter grid search over dynamically assembled datasets that combine
-# real-world networks (power, london) with synthetic generators (LFR, BA,
+# real-world networks (power, transport) with synthetic generators (LFR, BA,
 # WS, ER).  The sensitivity_grid is decoupled from the data definition.
 
 master_data_root: "/root/autodl-tmp/split"
@@ -37,21 +37,21 @@ experiments:
               generators: ["power", "LFR", "BA", "WS", "ER"]
               sampling: { train: 99999, val: 99999, test: 99999 }
 
-        # London transport + synthetic generators
-        - mix_id: "20-100-london+LBWE"
+        # transport + synthetic generators
+        - mix_id: "20-100-transport+LBWE"
           sources:
             - base_dirs: ["20-40", "40-100"]
-              generators: ["london", "LFR", "BA", "WS", "ER"]
+              generators: ["transport", "LFR", "BA", "WS", "ER"]
               sampling: { train: 99999, val: 99999, test: 99999 }
-        - mix_id: "100-300-london+LBWE"
+        - mix_id: "100-300-transport+LBWE"
           sources:
             - base_dirs: ["100", "200", "300"]
-              generators: ["london", "LFR", "BA", "WS", "ER"]
+              generators: ["transport", "LFR", "BA", "WS", "ER"]
               sampling: { train: 99999, val: 99999, test: 99999 }
-        - mix_id: "20-300-london+LBWE"
+        - mix_id: "20-300-transport+LBWE"
           sources:
             - base_dirs: ["20-40", "40-100", "100", "200", "300"]
-              generators: ["london", "LFR", "BA", "WS", "ER"]
+              generators: ["transport", "LFR", "BA", "WS", "ER"]
               sampling: { train: 99999, val: 99999, test: 99999 }
 
       templates:

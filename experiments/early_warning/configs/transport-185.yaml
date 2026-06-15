@@ -1,0 +1,34 @@
+
+dismantling_data_dir: "/root/autodl-tmp/data_metric/transport_185" 
+output_dir: "../results/transport-185"
+dataset_type: "multi-network"
+prediction_strategy: "component_aware" 
+
+monotonicity_test:
+  tolerance: '1/369'  
+
+test_type: "single_param" 
+
+model_suite:
+  - name: "Base-Model-0-100"
+    node_range: [0, 300]
+    base_dir: "../models/multisource-185-models/100-200-transport+LBWE"
+
+  - name: "Base-Model-300-600"
+    node_range: [300, 400]
+    base_dir: "../models/multisource-185-models/300-transport+LBWE"
+
+    
+base_model_params:
+  num_layers: 5
+  hidden_dim: 128
+  dropout: 0.2
+  jk_type: 'lstm'
+  use_virtual_node: True
+  use_residual: True
+  activation_fn: 'gelu'
+  input_dim: 7
+  feature_dim: 3
+  
+plotting:
+  enabled: true

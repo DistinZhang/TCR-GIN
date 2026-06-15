@@ -44,8 +44,8 @@ From the repository root:
 
 2) Use a fixed number of CPU cores:
     python utils/aggregate_remnants.py \
-        --components-dir experiments/trajectory_analysis/data/london/london-Components \
-        --remnants-dir experiments/trajectory_analysis/data/london/london-Remnants \
+        --components-dir experiments/trajectory_analysis/data/transport/transport-Components \
+        --remnants-dir experiments/trajectory_analysis/data/transport/transport-Remnants \
         --cores 8
 
 3) Another example:

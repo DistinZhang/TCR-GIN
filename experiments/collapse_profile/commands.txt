@@ -1,0 +1,24 @@
+python experiments/collapse_profile/run_profile_experiments.py --config experiments/collapse_profile/configs/train/reddit_profile.yaml
+
+python experiments/collapse_profile/test_profile.py --config experiments/collapse_profile/configs/test_power_ergm.yaml --test_runs 1,3,5
+
+
+python experiments/collapse_profile/test_profile.py --config experiments/collapse_profile/configs/test/test_reddit_ergm.yaml
+
+# Default configuration
+python experiments/collapse_profile/plot_profile.py --config experiments/collapse_profile/configs/plot/plot_reddit_ergm.yaml
+
+# Use predictions from run 1,2 only
+python experiments/collapse_profile/plot_profile.py --config experiments/collapse_profile/configs/plot/plot_reddit_ergm.yaml --plot_runs 1,2
+
+# Custom baselines (full name or abbreviation)
+python experiments/collapse_profile/plot_profile.py --config experiments/collapse_profile/configs/plot/plot_reddit_ergm.yaml --baselines "DC,DCR,BC,BCR,CoreHD,FINDER,GND,GNDR,VE,VER"
+
+# Plot all 28 baselines
+python experiments/collapse_profile/plot_profile.py --config experiments/collapse_profile/configs/plot/plot_reddit_ergm.yaml --baselines "all"
+
+
+# transport
+python experiments/collapse_profile/run_profile_experiments.py --config experiments/collapse_profile/configs/train/transport_profile.yaml
+python experiments/collapse_profile/test_profile.py --config experiments/collapse_profile/configs/test/test_transport_ergm.yaml
+python experiments/collapse_profile/plot_profile.py --config experiments/collapse_profile/configs/plot/plot_transport_ergm.yaml

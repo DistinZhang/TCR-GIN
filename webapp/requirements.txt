@@ -1,0 +1,18 @@
+# TCR-GIN Streamlit web application environment for Streamlit Community Cloud.
+#
+# Streamlit Cloud reads this file because the app entry point is webapp/app.py.
+# Keep this file CPU-friendly and small; use webapp/environment.local.yml for
+# the CUDA-enabled local/server environment.
+
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+streamlit>=1.31,<2
+plotly>=5.17,<6
+numpy==1.26.4
+pandas==2.2.3
+scipy==1.15.2
+networkx==3.3
+matplotlib==3.9.0
+PyYAML==6.0.1
+torch==2.1.2+cpu
+torch-geometric==2.6.1

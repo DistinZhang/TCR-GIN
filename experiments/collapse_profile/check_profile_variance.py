@@ -1,36 +1,15 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
-TCR-GIN/experiments/collapse_profile/check_profile_variance.py
+check_profile_variance.py
+Check variance distribution of collapse profile dataset, diagnose if model faces "no learnable signal" problem.
 
-Inspect collapse-profile label variance and diagnose whether a dataset has
-enough signal for profile prediction.
-
-Function
---------
-This script reads profile-label JSON files from one or more directories,
-computes per-tau and global variance statistics, prints diagnostic tables, and
-saves distribution plots for each source.
-
-Inputs
-------
-- `--dirs`: one or more directories containing profile label JSON files.
-- `--label_suffix`: label filename suffix.
-- `--profile_key`: JSON key containing the collapse profile vector.
-- `--tau_key`: JSON key containing the tau grid.
-- `--output_dir`: directory for diagnostic plots.
-
-Outputs
--------
-- Console summary tables.
-- Variance/distribution plots under `--output_dir`.
-
-Usage
------
-Example:
-        python experiments/collapse_profile/check_profile_variance.py \
-                --dirs /path/to/source_a/train /path/to/source_b/train \
-                --output_dir experiments/collapse_profile/variance_check
+Usage:
+  python check_profile_variance.py \
+    --dirs /root/autodl-tmp/ERGM/split-ergm/REDDIT/configuration/train \
+           /root/autodl-tmp/ERGM/split-ergm/REDDIT/erdos_renyi/train \
+    --label_suffix _profile_label.json \
+    --profile_key collapse_profile_full \
+    --tau_key tau_grid_full
+    python experiments/collapse_profile/check_profile_variance.py --dirs /root/autodl-tmp/ERGM/split-ergm/REDDIT/configuration/train /root/autodl-tmp/ERGM/split-ergm/REDDIT/erdos_renyi/train --output_dir experiments/collapse_profile/variance_check
 """
 
 import os
@@ -38,11 +17,11 @@ import json
 import argparse
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")
+matplotlib.use("Agg")   # Headless server environment, disable GUI backend
 import matplotlib.pyplot as plt
 
 
-# Command-line arguments
+# ─────────────────────────── Arguments ───────────────────────────
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -69,21 +48,27 @@ def parse_args():
     return parser.parse_args()
 
 
-# Source-name generation
+# ─────────────────────────── source name generation ───────────────────────────
 
 def make_source_name(d: str, existing: set) -> str:
-    """Build a unique source name from trailing directory components."""
+    """
+    Use "grandparent_parent_cur" combination to construct unique names, avoid multi-directory name conflicts.
+    Example:/root/.../REDDIT/configuration/train -> configuration_train
+          /root/.../REDDIT/erdos_renyi/train   -> erdos_renyi_train
+    """
     parts = []
     p = os.path.normpath(d)
-    for _ in range(3):
+    for _ in range(3):          # Take at most 3 levels from the end
         parts.insert(0, os.path.basename(p))
         p = os.path.dirname(p)
 
+    # Start from the shortest uniquely distinguishable combination
     for depth in range(1, len(parts) + 1):
         name = "_".join(parts[-depth:])
         if name not in existing:
             return name
 
+    # If still duplicate, add numeric suffix
     base = "_".join(parts)
     i = 2
     while f"{base}_{i}" in existing:
@@ -91,10 +76,13 @@ def make_source_name(d: str, existing: set) -> str:
     return f"{base}_{i}"
 
 
-# Data loading
+# ─────────────────────────── Data Loading ───────────────────────────
 
 def load_profiles(dirs, label_suffix, profile_key, tau_key):
-    """Return profile arrays grouped by source name."""
+    """
+    Returns:
+        data_by_source: dict[source_name -> {"profiles": np.ndarray [N, T], "taus": list}]
+    """
     data_by_source = {}
     used_names = set()
 
@@ -134,7 +122,7 @@ def load_profiles(dirs, label_suffix, profile_key, tau_key):
     return data_by_source
 
 
-# Statistical analysis
+# ─────────────────────────── Statistical Analysis ───────────────────────────
 
 def compute_stats(arr: np.ndarray, taus):
     T = arr.shape[1]
@@ -187,7 +175,7 @@ def print_stats_table(name, stats):
         print(f"\n  [OK] All tau positions have std >= 0.005. Data has learnable signal.")
 
 
-# Plotting
+# ─────────────────────────── Visualization ───────────────────────────
 
 def plot_profile_distribution(name, arr, stats, output_dir):
     taus = stats["tau_labels"]
@@ -250,7 +238,7 @@ def plot_profile_distribution(name, arr, stats, output_dir):
 
     plt.tight_layout()
     os.makedirs(output_dir, exist_ok=True)
-    # Remove special characters from the output filename.
+    # Remove possible special characters from filenames
     safe_name = name.replace("/", "_").replace("\\", "_")
     out_path = os.path.join(output_dir, f"profile_variance_{safe_name}.png")
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
@@ -262,7 +250,7 @@ def plot_cross_source_comparison(all_stats, output_dir):
     if len(all_stats) < 2:
         return
 
-    # Use the first source's tau labels as the x-axis.
+    # Take tau labels from first source as x-axis (assume same for all sources)
     first_stats = next(iter(all_stats.values()))
     taus  = first_stats["tau_labels"]
     T     = len(taus)
@@ -310,7 +298,7 @@ def plot_cross_source_comparison(all_stats, output_dir):
     print(f"\n  [Saved] {out_path}")
 
 
-# Main workflow
+# ─────────────────────────── Main Process ───────────────────────────
 
 def main():
     args = parse_args()

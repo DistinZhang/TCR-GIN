@@ -55,8 +55,10 @@ class TCR_GIN_Profile(nn.Module):
             self.activation_module = nn.GELU()
         elif activation_name == "relu":
             self.activation_module = nn.ReLU()
+        elif activation_name in ("sigmoid", "sigmod"):
+            self.activation_module = nn.Sigmoid()
         else:
-            raise ValueError(f"Unsupported activation function: {args.activation_fn}")
+            raise ValueError(f"Unsupported activation function: {args.activation_fn}. Supported: relu, gelu, sigmoid")
 
         self.input_proj = nn.Linear(args.input_dim, self.hidden_dim)
 
@@ -144,7 +146,6 @@ class TCR_GIN_Profile(nn.Module):
         graph_representation = self.pool(node_representation, batch)
         prediction = self.prediction_head(graph_representation)
 
-        # Collapse distance lies in [0, 1].
         prediction = torch.sigmoid(prediction)
         return prediction.view(-1, self.num_tau)
 

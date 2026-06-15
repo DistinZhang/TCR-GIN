@@ -2,36 +2,15 @@
 # -*- coding: utf-8 -*-
 """Argument parsing for collapse-profile experiments.
 
-Function
---------
-This module parses command-line arguments, loads optional YAML defaults,
-normalizes single-source and multi-source dataset paths, validates core paths,
-and prepares tau values for collapse-profile training and evaluation.
-
-Inputs
-------
-- `--config`: optional YAML configuration file.
-- Train/validation/test/cache paths provided as single strings,
-  comma-separated strings, or YAML lists.
-
-Outputs
--------
-- An argparse namespace with normalized path lists and validated settings.
-
-Usage
------
-YAML list:
-    train_path:
-      - /path/to/dataset_a/train
-      - /path/to/dataset_b/train
-
-Command-line comma-separated paths:
-    python experiments/collapse_profile/train_profile.py \
-        --train_path /path/a/train,/path/b/train
-
-Backward-compatible single path:
-    python experiments/collapse_profile/train_profile.py \
-        --train_path /path/a/train
+Path arguments (train_path / val_path / test_path / cache_path) support:
+  - YAML list format:
+      train_path:
+        - /path/to/dataset_a/train
+        - /path/to/dataset_b/train
+  - Command-line comma-separated:
+      --train_path /path/a/train,/path/b/train
+  - Command-line single path (backward compatible):
+      --train_path /path/a/train
 """
 
 from __future__ import annotations
@@ -77,7 +56,7 @@ def load_and_flatten_config(config_path: str) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# tau-value normalization
+# Tau value normalization
 # ---------------------------------------------------------------------------
 
 def normalize_tau_values(tau_values) -> List[float]:
@@ -96,11 +75,18 @@ def normalize_tau_values(tau_values) -> List[float]:
 
 
 # ---------------------------------------------------------------------------
-# Path-argument normalization
+# Path parameter normalization (core addition)
 # ---------------------------------------------------------------------------
 
 def _to_path_list(val: Union[None, str, list]) -> List[str]:
-    """Convert any supported path value into a list of strings."""
+    """Convert path values of any form to string list.
+
+    Supports:
+      - None          → []
+      - "path"        → ["path"]
+      - "p1,p2"       → ["p1", "p2"]   (comma-separated)
+      - ["p1", "p2"]  → ["p1", "p2"]
+    """
     if val is None:
         return []
     if isinstance(val, list):
@@ -108,34 +94,35 @@ def _to_path_list(val: Union[None, str, list]) -> List[str]:
     if isinstance(val, str):
         parts = [p.strip() for p in val.split(",") if p.strip()]
         return parts
+    # Other scalars (Path objects, etc.)
     return [str(val).strip()]
 
 
 def _normalize_path_args(args) -> None:
-    """Normalize path fields in place and align cache_path length."""
+    """Normalize all path fields to lists in place, and align cache_path length."""
 
-    # --- Dataset paths ---
+    # --- Data paths ---
     for attr in ("train_path", "val_path", "test_path"):
         setattr(args, attr, _to_path_list(getattr(args, attr, None)))
 
-    # --- cache_path normalization aligned with train_path ---
+    # --- cache_path normalization + align with train_path ---
     n_train = len(args.train_path)
 
     cache_raw = getattr(args, "cache_path", None)
     cache_list = _to_path_list(cache_raw)
 
     if len(cache_list) == 0:
-        # No cache configured: create one cache subdirectory per training path.
+        # Not configured: auto-generate independent cache subdirectories for each training path
         cache_list = [
             os.path.join("cache", f"split_{i}") for i in range(max(n_train, 1))
         ]
     elif len(cache_list) == 1 and n_train > 1:
-        # One cache root is broadcast into per-source cache subdirectories.
+        # Only one cache root directory given → broadcast to n_train subdirectories
         base = cache_list[0]
         cache_list = [os.path.join(base, f"split_{i}") for i in range(n_train)]
     elif len(cache_list) != n_train and n_train > 0:
         raise ValueError(
-            f"cache_path length ({len(cache_list)}) does not match train_path length ({n_train})."
+            f"cache_path length({len(cache_list)}) does not match train_path length({n_train}) "
             f"\n  cache_path : {cache_list}"
             f"\n  train_path : {args.train_path}"
         )
@@ -150,7 +137,7 @@ def _normalize_path_args(args) -> None:
 def parse_args():
     parser = argparse.ArgumentParser(description="Collapse-profile TCR-GIN training")
 
-    # --- Core settings ---
+    # --- Basic ---
     parser.add_argument("--config", type=str, default=None)
     parser.add_argument("--experiment_name", type=str)
     parser.add_argument("--seed", type=int)
@@ -158,30 +145,30 @@ def parse_args():
     parser.add_argument("--num_runs", type=int)
     parser.add_argument("--use_tqdm", type=lambda x: str(x).lower() == "true")
 
-    # --- Dataset paths: keep type=str for CLI compatibility; normalization handles lists. ---
+    # --- Data paths: type=str for CLI compatibility; lists handled by normalization function ---
     parser.add_argument(
         "--train_path", type=str,
-        help="Training-set path. Use comma-separated paths or a YAML list for multiple sources.",
+        help="Training set path, multiple paths comma-separated, or list in YAML",
     )
     parser.add_argument(
         "--val_path", type=str,
-        help="Validation-set path. Use comma-separated paths or a YAML list for multiple sources.",
+        help="Validation set path, multiple paths comma-separated, or list in YAML",
     )
     parser.add_argument(
         "--test_path", type=str,
-        help="Test-set path. Use comma-separated paths or a YAML list for multiple sources.",
+        help="Test set path, multiple paths comma-separated, or list in YAML",
     )
     parser.add_argument(
         "--cache_path", type=str,
-           help="Cache path. Use comma-separated paths or a YAML list; if one root is provided, "
-               "split_0, split_1, ... subdirectories are generated automatically.",
+        help="Cache path, multiple paths comma-separated, or list in YAML;"
+             "if only one is given, split_0, split_1 ... subdirectories will be auto-generated",
     )
     parser.add_argument("--rebuild_cache", type=lambda x: str(x).lower() == "true")
     parser.add_argument("--label_suffix", type=str)
     parser.add_argument("--label_tau_key", type=str)
     parser.add_argument("--label_profile_key", type=str)
 
-    # --- Model architecture ---
+    # --- Model structure ---
     parser.add_argument("--input_dim", type=int)
     parser.add_argument("--feature_dim", type=int, default=None)
     parser.add_argument("--hidden_dim", type=int)
@@ -199,7 +186,7 @@ def parse_args():
     parser.add_argument("--num_workers", type=int)
     parser.add_argument("--lr", type=float)
     parser.add_argument("--l2_reg", type=float)
-    parser.add_argument("--label_scale", type=float, default=100.0)
+    parser.add_argument("--label_scale", type=float, default=1.0)
     parser.add_argument("--use_lr_scheduler", type=lambda x: str(x).lower() == "true")
     parser.add_argument("--warmup_epochs", type=int)
     parser.add_argument("--min_lr", type=float)
@@ -207,18 +194,18 @@ def parse_args():
     parser.add_argument("--monitor_metric", type=str)
     parser.add_argument("--early_stop_patience", type=int)
 
-    # --- Consistency / monotonicity ---
+    # --- Consistency / Monotonicity ---
     parser.add_argument("--consistency_lambda", type=float)
     parser.add_argument("--piss_k", type=int)
     parser.add_argument("--monotonic_lambda", type=float)
 
-    # --- Outputs ---
+    # --- Output ---
     parser.add_argument("--output_dir", type=str)
     parser.add_argument("--model_dir", type=str)
     parser.add_argument("--model_path", type=str)
 
     # ------------------------------------------------------------------
-    # Two-stage parsing: read config defaults first, then apply CLI overrides.
+    # Two-stage parsing: read config file first, then override with command line
     # ------------------------------------------------------------------
     temp_args, _ = parser.parse_known_args()
     defaults: Dict[str, Any] = {}
@@ -228,7 +215,7 @@ def parse_args():
     args = parser.parse_args()
 
     # ------------------------------------------------------------------
-    # Path normalization must run after set_defaults.
+    # Path normalization (must be after set_defaults)
     # ------------------------------------------------------------------
     _normalize_path_args(args)
 
@@ -236,10 +223,10 @@ def parse_args():
     for attr in ("train_path", "val_path", "test_path"):
         paths: List[str] = getattr(args, attr)
         if not paths:
-            raise ValueError(f"{attr} cannot be empty. Set it in the config file or command line.")
+            raise ValueError(f"{attr} cannot be empty, please specify in config file or command line.")
         for p in paths:
             if not os.path.exists(p):
-                raise FileNotFoundError(f"{attr} path does not exist: {p}")
+                raise FileNotFoundError(f"{attr} path does not exist:{p}")
 
     # ------------------------------------------------------------------
     # input_dim / feature_dim alignment
@@ -258,12 +245,12 @@ def parse_args():
         )
 
     # ------------------------------------------------------------------
-    # tau-value normalization
+    # Normalize tau values
     # ------------------------------------------------------------------
     args.tau_values = normalize_tau_values(args.tau_values)
 
     # ------------------------------------------------------------------
-    # Default label fields
+    # Label field defaults
     # ------------------------------------------------------------------
     if args.label_suffix is None:
         args.label_suffix = "_profile_label.json"

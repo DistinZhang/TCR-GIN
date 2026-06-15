@@ -1,0 +1,85 @@
+network,heuristic,removals,static,threshold,rem_num,network_size,critical_threshold,dismantle_time
+net2-BC_10_1,BruteForce,"[2, 0, 1]",TRUE,0.571429,3,7,0.428571,0
+net2-BC_13_1,BruteForce,[2],TRUE,1,1,4,0.25,0
+net2-BC_3_2,BruteForce,"[4, 5, 1]",TRUE,0.666667,3,6,0.5,0
+net2-BC_4_2,BruteForce,"[4, 1]",TRUE,0.8,2,5,0.4,0
+net2-BC_6_2,BruteForce,[3],TRUE,1,1,4,0.25,0
+net2-BC_5_2,BruteForce,"[4, 1]",TRUE,0.8,2,5,0.4,0
+net2-BC_12_1,BruteForce,"[2, 0]",TRUE,0.8,2,5,0.4,0
+net2-DC_15_1,BruteForce,[3],TRUE,1,1,4,0.25,0
+net2-DC_14_1,BruteForce,"[4, 1]",TRUE,0.8,2,5,0.4,0
+net2-BC_9_1,BruteForce,"[2, 1, 3, 0]",TRUE,0.5,4,8,0.5,0
+net2-DC_1_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-DC_13_1,BruteForce,"[4, 5, 1]",TRUE,0.666667,3,6,0.5,0
+net2-DC_12_1,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-DC_11_1,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-BC_1_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-DC_2_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-BC_11_1,BruteForce,"[2, 0, 1]",TRUE,0.666667,3,6,0.5,0
+net2-BC_2_2,BruteForce,"[5, 0, 2, 4]",TRUE,0.571429,4,7,0.571429,0
+net2-DC_8_1,BruteForce,[0],TRUE,1,1,4,0.25,0
+net2-DC_7_1,BruteForce,[0],TRUE,0.8,1,5,0.2,0
+net2-DC_6_1,BruteForce,"[0, 1]",TRUE,0.666667,2,6,0.333333,0
+net2-Opt_10_1,BruteForce,"[4, 1]",TRUE,0.8,2,5,0.4,0
+net2-Opt_11_1,BruteForce,[3],TRUE,1,1,4,0.25,0
+net2-DC_7_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-DC_5_1,BruteForce,"[1, 2, 0]",TRUE,0.571429,3,7,0.428571,0
+net2-DC_5_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Opt_6_1,BruteForce,"[0, 1]",TRUE,0.666667,2,6,0.333333,0
+net2-DC_8_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Opt_1_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Opt_7_1,BruteForce,[0],TRUE,0.8,1,5,0.2,0
+net2-Opt_6_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-DC_3_1,BruteForce,"[1, 2, 4, 3, 0]",TRUE,0.444444,5,9,0.555556,0
+net2-DC_4_1,BruteForce,"[1, 2, 3, 0]",TRUE,0.5,4,8,0.5,0
+net2-BC_8_1,BruteForce,"[2, 1, 3, 4, 0]",TRUE,0.444444,5,9,0.555556,0
+net2-Rand_10_2,BruteForce,[2],TRUE,1,1,4,0.25,0
+net2-Rand_10_1,BruteForce,"[2, 0]",TRUE,0.8,2,5,0.4,0
+net2-Opt_2_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Opt_5_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-DC_4_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Opt_8_1,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Opt_3_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-DC_9_1,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Opt_7_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Rand_4_2,BruteForce,"[0, 3, 4]",TRUE,0.571429,3,7,0.428571,0
+net2-DC_3_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Opt_5_1,BruteForce,"[1, 2, 0]",TRUE,0.571429,3,7,0.428571,0
+net2-Rand_6_2,BruteForce,"[0, 3, 4]",TRUE,0.571429,3,7,0.428571,0
+net2-Rand_6_1,BruteForce,"[2, 3, 0, 1]",TRUE,0.571429,4,7,0.571429,0
+net2-Opt_3_1,BruteForce,"[1, 2, 4, 3, 0]",TRUE,0.444444,5,9,0.555556,0
+net2-DC_6_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-DC_10_1,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Rand_7_2,BruteForce,"[2, 3]",TRUE,0.8,2,5,0.4,0
+net2-Rand_8_2,BruteForce,"[2, 3]",TRUE,0.8,2,5,0.4,0
+net2-Rand_9_1,BruteForce,"[2, 0]",TRUE,0.8,2,5,0.4,0
+net2-Rand_8_1,BruteForce,"[2, 3, 0]",TRUE,0.666667,3,6,0.5,0
+net2-Opt_4_1,BruteForce,"[1, 2, 3, 0]",TRUE,0.5,4,8,0.5,0
+net2-Rand_9_2,BruteForce,"[2, 3]",TRUE,0.8,2,5,0.4,0
+net2-Opt_4_2,BruteForce,"[0, 5, 2, 4]",TRUE,0.5,4,8,0.5,0
+net2-Rand_13_1,BruteForce,[0],TRUE,1,1,4,0.25,0
+net2-Rand_11_1,BruteForce,"[2, 0]",TRUE,0.8,2,5,0.4,0
+net2-Rand_12_1,BruteForce,"[2, 0]",TRUE,0.8,2,5,0.4,0
+net2-Opt_9_1,BruteForce,"[4, 5, 1]",TRUE,0.666667,3,6,0.5,0
+net2-Rand_5_2,BruteForce,"[0, 3, 4]",TRUE,0.571429,3,7,0.428571,0
+net2-BC_7_1,BruteForce,"[2, 0, 1, 3, 4, 5]",TRUE,0.4,6,10,0.6,0
+net2-Rand_7_1,BruteForce,"[2, 3, 0, 1]",TRUE,0.571429,4,7,0.571429,0
+net2-Rand_5_1,BruteForce,"[2, 4, 1, 3, 0]",TRUE,0.5,5,8,0.625,0
+net2-BC_6_1,BruteForce,"[2, 0, 1, 3, 4, 5]",TRUE,0.4,6,10,0.6,0
+net2-Rand_4_1,BruteForce,"[2, 4, 6, 7, 8]",TRUE,0.444444,5,9,0.555556,0
+net2-Opt_2_1,BruteForce,"[3, 1, 2, 5, 0, 4]",TRUE,0.4,6,10,0.6,0
+net2-BC_5_1,BruteForce,"[2, 0, 1, 3, 4, 5]",TRUE,0.4,6,10,0.6,0
+net2-DC_2_1,BruteForce,"[3, 1, 2, 5, 0, 4]",TRUE,0.4,6,10,0.6,0
+net2-BC_2_1,BruteForce,"[2, 4, 1, 3, 6, 0, 5]",TRUE,0.363636,7,11,0.636364,0
+net2-BC_1_1,BruteForce,"[2, 4, 1, 3, 6, 0, 5]",TRUE,0.363636,7,11,0.636364,0
+net2-BC_3_1,BruteForce,"[2, 4, 1, 3, 6, 0, 5]",TRUE,0.363636,7,11,0.636364,0
+net2-DC_1_1,BruteForce,"[2, 4, 1, 3, 6, 0, 5]",TRUE,0.363636,7,11,0.636364,0
+net2-Opt_1_1,BruteForce,"[2, 4, 1, 3, 6, 0, 5]",TRUE,0.363636,7,11,0.636364,0
+net2-BC_4_1,BruteForce,"[2, 4, 1, 3, 6, 0, 5]",TRUE,0.363636,7,11,0.636364,0
+net2-Rand_3_1,BruteForce,"[0, 7, 5, 3, 16, 15, 14, 12, 11]",TRUE,0.235294,9,17,0.529412,0
+net2-Rand_2_1,BruteForce,"[5, 6, 4, 3, 0, 11, 10, 2, 1, 7]",TRUE,0.222222,10,18,0.555556,0
+net2-Rand_1_1,BruteForce,"[5, 6, 4, 12, 3, 0, 7, 13, 2, 1, 11]",TRUE,0.210526,11,19,0.578947,0
+net2-Opt_0_1,BruteForce,"[7, 5, 6, 4, 13, 3, 0, 8, 14, 2, 1, 12]",TRUE,0.2,12,20,0.6,0
+net2-Rand_0_1,BruteForce,"[7, 5, 6, 4, 13, 3, 0, 8, 14, 2, 1, 12]",TRUE,0.2,12,20,0.6,0
+net2-DC_0_1,BruteForce,"[7, 5, 6, 4, 13, 3, 0, 8, 14, 2, 1, 12]",TRUE,0.2,12,20,0.6,0
+net2-BC_0_1,BruteForce,"[7, 5, 6, 4, 13, 3, 0, 8, 14, 2, 1, 12]",TRUE,0.2,12,20,0.6,0

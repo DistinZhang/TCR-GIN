@@ -1,0 +1,32 @@
+network,heuristic,removals,static,threshold,rem_num,network_size,critical_threshold,dismantle_time
+net1-BC_5_1,BruteForce,[4],TRUE,0.666667,1,15,0.066667,0
+net1-DC_9_1,BruteForce,[3],TRUE,1,1,10,0.1,0
+net1-DC_7_1,BruteForce,[9],TRUE,0.833333,1,12,0.083333,0
+net1-DC_8_1,BruteForce,[8],TRUE,0.909091,1,11,0.090909,0
+net1-BC_3_1,BruteForce,"[13, 4]",TRUE,0.588235,2,17,0.117647,0
+net1-Rand_10_1,BruteForce,[8],TRUE,1,1,10,0.1,0
+net1-DC_6_1,BruteForce,"[11, 10]",TRUE,0.714286,2,14,0.142857,0
+net1-Opt_3_1,BruteForce,[13],TRUE,0.588235,1,17,0.058824,0
+net1-BC_4_1,BruteForce,"[12, 4]",TRUE,0.625,2,16,0.125,0
+net1-Opt_2_1,BruteForce,"[14, 5]",TRUE,0.555556,2,18,0.111111,0
+net1-DC_5_1,BruteForce,"[11, 10]",TRUE,0.666667,2,15,0.133333,0
+net1-DC_3_1,BruteForce,"[14, 5, 4]",TRUE,0.588235,3,17,0.176471,0
+net1-DC_2_1,BruteForce,"[14, 5, 4]",TRUE,0.555556,3,18,0.166667,0
+net1-DC_4_1,BruteForce,"[4, 3, 13]",TRUE,0.625,3,16,0.1875,0
+net1-Rand_4_1,BruteForce,"[11, 12, 4]",TRUE,0.625,3,16,0.1875,0
+net1-Rand_9_1,BruteForce,[4],TRUE,0.909091,1,11,0.090909,0
+net1-BC_1_1,BruteForce,"[15, 6, 5]",TRUE,0.526316,3,19,0.157895,0
+net1-Rand_8_1,BruteForce,"[11, 5]",TRUE,0.833333,2,12,0.166667,0
+net1-Rand_5_1,BruteForce,"[10, 11, 3]",TRUE,0.666667,3,15,0.2,0
+net1-Rand_7_1,BruteForce,"[12, 3]",TRUE,0.769231,2,13,0.153846,0
+net1-Rand_6_1,BruteForce,"[9, 10, 3]",TRUE,0.714286,3,14,0.214286,0
+net1-BC_2_1,BruteForce,"[14, 4, 3]",TRUE,0.555556,3,18,0.166667,0
+net1-Rand_3_1,BruteForce,"[12, 4, 13]",TRUE,0.588235,3,17,0.176471,0
+net1-Rand_2_1,BruteForce,"[13, 4, 14]",TRUE,0.555556,3,18,0.166667,0
+net1-DC_1_1,BruteForce,"[15, 6, 5]",TRUE,0.526316,3,19,0.157895,0
+net1-Opt_1_1,BruteForce,"[15, 6, 5]",TRUE,0.526316,3,19,0.157895,0
+net1-Rand_1_1,BruteForce,"[14, 15, 4, 5]",TRUE,0.526316,4,19,0.210526,0
+net1-BC_0_1,BruteForce,"[15, 16, 5, 6]",TRUE,0.5,4,20,0.2,0
+net1-DC_0_1,BruteForce,"[15, 16, 5, 6]",TRUE,0.5,4,20,0.2,0
+net1-Opt_0_1,BruteForce,"[15, 16, 5, 6]",TRUE,0.5,4,20,0.2,0
+net1-Rand_0_1,BruteForce,"[15, 16, 5, 6]",TRUE,0.5,4,20,0.2,0

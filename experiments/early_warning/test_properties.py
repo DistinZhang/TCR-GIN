@@ -336,11 +336,11 @@ def prepare_and_predict_all_graphs(model_suite, device, run_idx, config, model_a
             pred_holistic = 0.0
             if model_remnant:
                 batch_remnant = Batch.from_data_list([g_remnant]).to(device)
-                pred_norm = model_remnant(batch_remnant).item()
 
                 # Rescale: Real = Norm / Scale
                 scale = float(stats.get('scale_factor', DEFAULT_SCALE_FACTOR))
-                pred_holistic = pred_norm / scale
+                pred_real = model_remnant(batch_remnant) / scale
+                pred_holistic = float(torch.clamp(pred_real, 0.0, 1.0).view(-1)[0].item())
 
             # 2. Aggregated (component-aware) prediction
             pred_aggregated = pred_holistic
@@ -357,11 +357,11 @@ def prepare_and_predict_all_graphs(model_suite, device, run_idx, config, model_a
                         model_comp, stats_comp = get_model_and_stats_for_graph(sub_g, model_suite, run_idx)
                         if not model_comp: continue
                         batch_comp = Batch.from_data_list([sub_g]).to(device)
-                        pred_comp_norm = model_comp(batch_comp).item()
 
                         # Component-level rescaling
                         scale = float(stats_comp.get('scale_factor', DEFAULT_SCALE_FACTOR))
-                        pred_comp_real = pred_comp_norm / scale
+                        pred_comp_real = model_comp(batch_comp) / scale
+                        pred_comp_real = float(torch.clamp(pred_comp_real, 0.0, 1.0).view(-1)[0].item())
 
                         total_weighted_pred += pred_comp_real * sub_g.num_nodes
                     pred_aggregated = total_weighted_pred / total_nodes if total_nodes > 0 else 0.0

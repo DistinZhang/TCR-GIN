@@ -1,7 +1,7 @@
 # TCR-GIN/experiments/trajectory_analysis/configs/train-multisource.yaml
 #
 # Multi-source training for trajectory analysis experiments.  Each instance
-# combines a real-world network dataset (power, london, route) with
+# combines a real-world network dataset (power, transport, route) with
 # synthetic generators (LFR, BA, WS, ER) across various node-count ranges.
 
 master_data_root: "/root/autodl-tmp/split"
@@ -37,44 +37,44 @@ experiments:
               generators: ["power", "LFR", "BA", "WS", "ER"]
               sampling: { train: 99999, val: 99999, test: 99999 }
 
-        # London transport + synthetic generators
-        - mix_id: "20-100-london+LBWE"
+        # transport transport + synthetic generators
+        - mix_id: "20-100-transport+LBWE"
           sources:
             - base_dirs: ["20-40", "40-100"]
-              generators: ["london", "LFR", "BA", "WS", "ER"]
+              generators: ["transport", "LFR", "BA", "WS", "ER"]
               sampling: { train: 99999, val: 99999, test: 99999 }
-        - mix_id: "100-300-london+LBWE"
+        - mix_id: "100-300-transport+LBWE"
           sources:
             - base_dirs: ["100", "200", "300"]
-              generators: ["london", "LFR", "BA", "WS", "ER"]
+              generators: ["transport", "LFR", "BA", "WS", "ER"]
               sampling: { train: 99999, val: 99999, test: 99999 }
-        - mix_id: "20-300-london+LBWE"
+        - mix_id: "20-300-transport+LBWE"
           sources:
             - base_dirs: ["20-40", "40-100", "100", "200", "300"]
-              generators: ["london", "LFR", "BA", "WS", "ER"]
+              generators: ["transport", "LFR", "BA", "WS", "ER"]
               sampling: { train: 99999, val: 99999, test: 99999 }
 
         # Route network + synthetic generators
-        - mix_id: "20-200-route+LBWE"
-          sources:
-            - base_dirs: ["20-40", "40-100", "100", "200"]
-              generators: ["route", "LFR", "ER", "BA", "WS"]
-              sampling: { train: 99999, val: 99999, test: 99999 }
-        - mix_id: "300-600-route+LBWE"
-          sources:
-            - base_dirs: ["300", "400", "500", "600"]
-              generators: ["route", "LFR", "ER", "BA", "WS"]
-              sampling: { train: 99999, val: 99999, test: 99999 }
-        - mix_id: "700-1000-route+LBWE"
-          sources:
-            - base_dirs: ["700", "800", "900", "1000"]
-              generators: ["route", "LFR", "ER", "BA", "WS"]
-              sampling: { train: 99999, val: 99999, test: 99999 }
-        - mix_id: "1100-1900-route+LBWE"
-          sources:
-            - base_dirs: ["1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"]
-              generators: ["route", "LFR", "ER", "BA", "WS"]
-              sampling: { train: 99999, val: 99999, test: 99999 }
+        # - mix_id: "20-200-route+LBWE"
+        #   sources:
+        #     - base_dirs: ["20-40", "40-100", "100", "200"]
+        #       generators: ["route", "LFR", "ER", "BA", "WS"]
+        #       sampling: { train: 99999, val: 99999, test: 99999 }
+        # - mix_id: "300-600-route+LBWE"
+        #   sources:
+        #     - base_dirs: ["300", "400", "500", "600"]
+        #       generators: ["route", "LFR", "ER", "BA", "WS"]
+        #       sampling: { train: 99999, val: 99999, test: 99999 }
+        # - mix_id: "700-1000-route+LBWE"
+        #   sources:
+        #     - base_dirs: ["700", "800", "900", "1000"]
+        #       generators: ["route", "LFR", "ER", "BA", "WS"]
+        #       sampling: { train: 99999, val: 99999, test: 99999 }
+        # - mix_id: "1100-1900-route+LBWE"
+        #   sources:
+        #     - base_dirs: ["1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900"]
+        #       generators: ["route", "LFR", "ER", "BA", "WS"]
+        #       sampling: { train: 99999, val: 99999, test: 99999 }
 
       templates:
         temp_data_dir: "temp_data/multisource_{mix_id}"
