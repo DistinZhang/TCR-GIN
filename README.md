@@ -11,9 +11,7 @@ the associated Zenodo archive.
 
 Open the deployed Streamlit app:
 
-```text
-https://early-warning-collapse.streamlit.app
-```
+[https://early-warning-collapse.streamlit.app](https://early-warning-collapse.streamlit.app)
 
 ## What the App Does
 
