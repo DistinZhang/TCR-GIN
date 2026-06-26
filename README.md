@@ -12,17 +12,17 @@ signals of breakdown in complex networks**
 Jie Zhang, Tao Wang, Yatai Ji, Hua He, Zhengqiu Zhu, Boquan Zhang, Xin Zhou, Changjun Fan,
 Bin Chen, Manlio De Domenico, and Xin Lu.
 
-Repository:
-
-```text
-https://github.com/DistinZhang/TCR-GIN
-```
+Repository: [DistinZhang/TCR-GIN](https://github.com/DistinZhang/TCR-GIN)
 
 ![TCR-GIN conceptual workflow](webapp/assets/home_concept.png)
 
 Conceptual illustration of the early-warning workflow. Visual elements are
 schematic and do not represent quantitative outputs. Image generated with GPT
 Image 2.
+
+## Demo video
+
+https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0
 
 This repository implements Topology-Consistency Regularized Graph Isomorphism
 Network (TCR-GIN), a physics-informed graph learning framework for estimating
@@ -54,10 +54,10 @@ methods.
 
 ## Quick links
 
-- **Code**: `https://github.com/DistinZhang/TCR-GIN`
-- **Data, models, and results**: `https://doi.org/10.5281/zenodo.20287619`
-- **Interactive demo**: `https://tcr-gin-early-warning.streamlit.app/`
-- **Demo video**: `https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0`
+- **Code**: [GitHub repository](https://github.com/DistinZhang/TCR-GIN)
+- **Data, models, and results**: [Zenodo archive](https://doi.org/10.5281/zenodo.20287619)
+- **Interactive demo**: [tcr-gin-early-warning.streamlit.app](https://tcr-gin-early-warning.streamlit.app/)
+- **Demo video**: [GitHub attachment](https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0)
 - **Citation**: use `CITATION.cff` and cite the associated manuscript and
   Zenodo record.
 
@@ -148,11 +148,7 @@ conda activate tcr-gin-webapp
 
 The datasets, trained model checkpoints, generated result tables, and large
 intermediate artifacts used to reproduce the manuscript are available from
-Zenodo:
-
-```text
-https://doi.org/10.5281/zenodo.20287619
-```
+[Zenodo](https://doi.org/10.5281/zenodo.20287619).
 
 The manuscript Data Availability statement points to the same record.
 
@@ -317,17 +313,11 @@ The app includes a bundled transport demo under
 Transport Demo** to load the sample network, model checkpoints, and YAML config
 without downloading external data.
 
-Public Streamlit deployment:
+Public Streamlit deployment: [tcr-gin-early-warning.streamlit.app](https://tcr-gin-early-warning.streamlit.app/)
 
-```text
-https://tcr-gin-early-warning.streamlit.app/
-```
+Recorded walkthrough: [GitHub attachment](https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0)
 
-Recorded walkthrough:
-
-https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0
-
-An archival copy is stored at `webapp/assets/tcr-gin-early-warning.mp4`.
+An archival copy is stored at [`webapp/assets/tcr-gin-early-warning.mp4`](webapp/assets/tcr-gin-early-warning.mp4).
 
 ### Start locally
 

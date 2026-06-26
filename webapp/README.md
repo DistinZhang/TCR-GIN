@@ -2,17 +2,11 @@
 
 This Streamlit application provides early warning for network structural collapse under node-removal attacks, powered by TCR-GIN. It is designed for local analysis, reproducible demos, and GitHub release with the early-warning experiments.
 
-Public deployment:
+Public deployment: [tcr-gin-early-warning.streamlit.app](https://tcr-gin-early-warning.streamlit.app/)
 
-```text
-https://tcr-gin-early-warning.streamlit.app/
-```
+Walkthrough recording: [GitHub attachment](https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0)
 
-Walkthrough recording:
-
-https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0
-
-An archival copy is stored at `webapp/assets/tcr-gin-early-warning.mp4`.
+An archival copy is stored at [`assets/tcr-gin-early-warning.mp4`](assets/tcr-gin-early-warning.mp4).
 
 ## What It Does
 

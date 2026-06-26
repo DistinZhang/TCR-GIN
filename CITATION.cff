@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "TCR-GIN: Topology-Consistency Regularized Graph Isomorphism Network"
+title: "Physics-informed graph learning of collapse distance reveals early-warning signals of breakdown in complex networks"
 message: "If you use this software, please cite the associated manuscript and Zenodo record."
 type: software
 authors:
@@ -15,6 +15,8 @@ authors:
     given-names: Zhengqiu
   - family-names: Zhang
     given-names: Boquan
+  - family-names: Zhou
+    given-names: Xin
   - family-names: Fan
     given-names: Changjun
   - family-names: Chen
