@@ -24,10 +24,6 @@ Conceptual illustration of the early-warning workflow. Visual elements are
 schematic and do not represent quantitative outputs. Image generated with GPT
 Image 2.
 
-## Demo video
-
-https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0
-
 This repository implements Topology-Consistency Regularized Graph Isomorphism
 Network (TCR-GIN), a physics-informed graph learning framework for estimating
 collapse distance in complex networks. Collapse distance is a configurable
@@ -73,7 +69,7 @@ TCR-GIN/
 ├── assets/                       # Lightweight README/project-page assets
 ├── arguments.py                  # Core scalar TCR-GIN argument parser
 ├── data_loader.py                # Graph triplet loading and dataloader logic
-├── train_piss.py                 # Core scalar training routine
+├── train_piss.py                 # Core training routine
 ├── run_experiments.py            # YAML-driven experiment launcher
 ├── run.sh                        # Master reproduction command list
 ├── requirements.txt              # Core pip environment
@@ -84,7 +80,7 @@ TCR-GIN/
 │   └── tcr_gin.py                # TCR-GIN model definition
 ├── configs/                      # Core training YAML files
 ├── experiments/
-│   ├── introduction/             # Introductory figure workflow
+│   ├── introduction/             # Research Status Analysis
 │   ├── baseline_comparison/      # Accuracy, runtime, exact-label, ablation, sensitivity tests
 │   ├── trajectory_analysis/      # Monotonicity, smoothness, additivity trajectory analyses
 │   ├── early_warning/            # Early-warning and robustness-metric comparisons
@@ -95,9 +91,7 @@ TCR-GIN/
 
 Large datasets, trained checkpoints, generated results, logs, and cache files
 are not intended to be stored in GitHub. They are distributed through the
-external archive described below. The only model artifacts included in this
-repository are the small bundled checkpoints used by the Streamlit transport
-demo under `webapp/examples/transport_demo/`.
+external archive described below.
 
 ## Installation
 
