@@ -11,7 +11,7 @@ Streamlit application for the manuscript:
 **Physics-informed graph learning of collapse distance reveals early-warning
 signals of breakdown in complex networks**
 
-Jie Zhang, Tao Wang, Yatai Ji, Hua He, Zhengqiu Zhu, Boquan Zhang, Changjun Fan,
+Jie Zhang, Tao Wang, Yatai Ji, Hua He, Zhengqiu Zhu, Boquan Zhang, Xin Zhou, Changjun Fan,
 Bin Chen, Manlio De Domenico, and Xin Lu.
 
 Repository:
