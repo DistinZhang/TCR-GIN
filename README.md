@@ -24,6 +24,10 @@ Conceptual illustration of the early-warning workflow. Visual elements are
 schematic and do not represent quantitative outputs. Image generated with GPT
 Image 2.
 
+## Demo video
+
+https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0
+
 This repository implements Topology-Consistency Regularized Graph Isomorphism
 Network (TCR-GIN), a physics-informed graph learning framework for estimating
 collapse distance in complex networks. Collapse distance is a configurable
@@ -57,7 +61,7 @@ methods.
 - **Code**: `https://github.com/DistinZhang/TCR-GIN`
 - **Data, models, and results**: `https://doi.org/10.5281/zenodo.20287619`
 - **Interactive demo**: `https://tcr-gin-early-warning.streamlit.app/`
-- **Demo video**: `webapp/assets/tcr-gin-early-warning.mp4`
+- **Demo video**: `https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0`
 - **Citation**: use `CITATION.cff` and cite the associated manuscript and
   Zenodo record.
 
@@ -327,9 +331,9 @@ https://tcr-gin-early-warning.streamlit.app/
 
 Recorded walkthrough:
 
-```text
-webapp/assets/tcr-gin-early-warning.mp4
-```
+https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0
+
+An archival copy is stored at `webapp/assets/tcr-gin-early-warning.mp4`.
 
 ### Start locally
 

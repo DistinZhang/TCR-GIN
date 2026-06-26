@@ -10,9 +10,9 @@ https://tcr-gin-early-warning.streamlit.app/
 
 Walkthrough recording:
 
-```text
-webapp/assets/tcr-gin-early-warning.mp4
-```
+https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0
+
+An archival copy is stored at `webapp/assets/tcr-gin-early-warning.mp4`.
 
 ## What It Does
 
