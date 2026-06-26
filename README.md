@@ -5,8 +5,6 @@
 [![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](environment.yml)
 [![Streamlit](https://img.shields.io/badge/Streamlit-demo-ff4b4b.svg)](webapp/)
 
-Code, data-processing scripts, trained-model interfaces, and an interactive
-Streamlit application for the manuscript:
 
 **Physics-informed graph learning of collapse distance reveals early-warning
 signals of breakdown in complex networks**
