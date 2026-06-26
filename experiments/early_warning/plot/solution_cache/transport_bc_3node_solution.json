@@ -1,0 +1,50 @@
+{
+  "network": "transport",
+  "attack_type": "BC",
+  "csv_heuristic": "betweenness_centrality",
+  "static": true,
+  "warning_step": 19,
+  "target_lcc": 111,
+  "original_nodes": 369,
+  "original_edges": 430,
+  "remaining_nodes": 350,
+  "remaining_edges": 350,
+  "remaining_lcc": 151,
+  "candidate_components_over_target": [
+    151,
+    120
+  ],
+  "search_candidate_nodes": 271,
+  "search_space": 3280455,
+  "checked_combinations_approx": 5000,
+  "solution": [
+    2,
+    61,
+    8
+  ],
+  "solution_post_lcc": 106,
+  "solution_collapses": true,
+  "best_lcc_found": 106,
+  "best_combo_found": [
+    2,
+    61,
+    8
+  ],
+  "future_attacks": [
+    0,
+    232,
+    229,
+    230,
+    282,
+    104,
+    2,
+    302,
+    247,
+    320,
+    186
+  ],
+  "elapsed_seconds": 0.3630821704864502,
+  "timestamp": "2026-06-23 23:56:08",
+  "candidate_order": "remaining nodes in components larger than target_lcc, sorted by degree descending, then node id ascending; validated on full remaining network",
+  "search_is_strictly_ordered": true
+}

@@ -1,0 +1,5 @@
+network,heuristic,removals,static,threshold,rem_num,network_size,critical_threshold,dismantle_time
+net2,DC,"[0, 3, 4]",TRUE,0.5,3,20,0.15,0.001
+net2,BC,"[0, 15, 8, 13, 5, 10, 12, 4]",TRUE,0.5,8,20,0.4,0.0034
+net2,Rand,"[13, 16, 10, 15, 14, 3, 7]",TRUE,0.5,7,20,0.35,0.0006
+net2,Opt,"[0, 3, 4]",TRUE,0.5,3,20,0.15,0.0765

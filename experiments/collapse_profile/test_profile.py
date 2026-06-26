@@ -512,7 +512,6 @@ def load_baseline_times(
         except Exception:
             continue
 
-        # Read dismantle_time from the source file.
         if "network" not in df.columns or "dismantle_time" not in df.columns:
             continue
 
@@ -541,9 +540,6 @@ def load_baseline_times(
             }
 
     return None
-
-
-
 
 def load_all_baseline_times(
     baseline_dir: str,
@@ -732,7 +728,6 @@ def write_aggregate_csv(all_run_metrics, save_path, run_times=None,
     has_timing = run_times is not None
     fieldnames = ["run_id"] + metric_keys
     if has_timing:
-        # Use a compact output column name.
         fieldnames += [
             "feature_time",
             "inference_time",
@@ -944,7 +939,6 @@ def write_baseline_aggregate_csv(
 
     all_entries.sort(key=lambda x: x["mae"])
 
-    # Use a compact output column name.
     fieldnames = [
         "rank", "algorithm", "algorithm_short", "mae", "num_valid",
         "time", "speedup_vs_tcr_gin",
@@ -1008,7 +1002,7 @@ def main():
     result_dir = cfg.get("result_dir", "experiments/collapse_profile/results")
     ds_metric_dir = os.path.join(result_dir, dataset_name, "metrics")
     tau_values = cfg["tau_values"]
-    label_scale = float(cfg.get("label_scale", 100.0))
+    label_scale = float(cfg.get("label_scale", 1.0))
     seed = int(cfg.get("seed", 42))
     batch_size = int(cfg.get("batch_size", 64))
     num_workers = int(cfg.get("num_workers", 4))

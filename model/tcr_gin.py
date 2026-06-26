@@ -1,38 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-TCR-GIN/model/tcr_gin.py
-
-Graph Isomorphism Network implementation used by the TCR-GIN training and
-evaluation scripts.
-
-Function
---------
-This module defines the `TCR_GIN` model and its linear-layer initializer. The
-model supports Jumping Knowledge aggregation, optional virtual nodes, residual
-connections, configurable activation functions, and graph-level regression.
-
-Inputs
-------
-- An argument namespace with model hyperparameters such as `input_dim`,
-    `hidden_dim`, `num_layers`, `dropout`, `jk_type`, `use_virtual_node`,
-    `use_residual`, and `activation_fn`.
-- Batched PyTorch Geometric graph data containing `x`, `edge_index`, and
-    `batch` fields.
-
-Outputs
--------
-- A tensor of shape `[batch_size, 1]` containing graph-level predictions.
-
-Usage
------
-Example:
-        from model.tcr_gin import TCR_GIN, init_weights
-
-        model = TCR_GIN(args)
-        model.apply(init_weights)
-        pred = model(batch)
-"""
+# model/tcr_gin.py
 
 import torch
 import torch.nn as nn
@@ -51,12 +17,16 @@ class TCR_GIN(nn.Module):
         self.use_virtual_node = args.use_virtual_node
         self.use_residual = args.use_residual
         
-        if args.activation_fn.lower() == 'gelu':
+
+        act_name = args.activation_fn.lower()
+        if act_name == 'gelu':
             self.activation_module = nn.GELU()
-        elif args.activation_fn.lower() == 'relu':
+        elif act_name == 'relu':
             self.activation_module = nn.ReLU()
+        elif act_name in ('sigmoid', 'sigmod'):
+            self.activation_module = nn.Sigmoid()
         else:
-            raise ValueError(f"Unsupported activation function: {args.activation_fn}")
+            raise ValueError(f"{args.activation_fn} error: only 'gelu', 'relu', 'sigmoid' are supported")
 
         self.input_proj = nn.Linear(args.input_dim, self.hidden_dim)
 
@@ -88,7 +58,7 @@ class TCR_GIN(nn.Module):
         elif self.jk_type == 'last':
             self.jk_layer = None
         else:
-            raise ValueError(f"Unsupported jk_type: '{self.jk_type}'")
+            raise ValueError(f"jk_type error: '{self.jk_type}'")
 
         if self.jk_type == 'cat':
             mlp_input_dim = self.hidden_dim * self.num_layers

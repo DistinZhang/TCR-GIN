@@ -2,35 +2,14 @@
 # -*- coding: utf-8 -*-
 """Data loading utilities for collapse-profile training.
 
-Function
---------
-This module loads single-source or multi-source collapse-profile graph datasets,
-caches processed PyTorch Geometric graph objects, and builds train/validation/test
-dataloaders for profile-valued PISS training.
+Path arguments (train_path / val_path / test_path / cache_path)
+support the following three forms (aligned with arguments_profile.py):
+  - Single string        : "/path/to/train"
+  - Comma-separated str  : "/path/a/train,/path/b/train"
+  - Python list          : ["/path/a/train", "/path/b/train"]
 
-Inputs
-------
-- train/validation/test/cache paths as a string, comma-separated string, or list.
-- Graph triplets containing `*_edges.npz`, `*_features.npy`, and profile label
-    JSON files.
-- Tau values and label keys used to slice profile targets.
-
-Outputs
--------
-- Cached graph objects.
-- `PISSGraphDataset` instances and PyTorch Geometric dataloaders.
-
-Usage
------
-Example:
-        train_loader, val_loader, test_loader = get_profile_dataloaders(
-                train_path=["data/source_a/train", "data/source_b/train"],
-                val_path=["data/source_a/valid", "data/source_b/valid"],
-                test_path=["data/source_a/test", "data/source_b/test"],
-                cache_path="cache/profile",
-                batch_size=32,
-                tau_values=[0.1, 0.2, 0.3],
-        )
+Multi-source datasets are concatenated at sample level into a unified PISSGraphDataset,
+DataLoader shuffles on the full set, samples from all sources are naturally mixed.
 """
 
 from __future__ import annotations
@@ -49,11 +28,17 @@ from torch_geometric.loader import DataLoader
 
 
 # ---------------------------------------------------------------------------
-# Path helpers
+# Path utilities
 # ---------------------------------------------------------------------------
 
 def _to_path_list(val: Union[None, str, list]) -> List[str]:
-    """Convert supported path inputs into a list of strings."""
+    """Convert path values of any form to string list.
+
+    - None          → []
+    - "path"        → ["path"]
+    - "p1,p2"       → ["p1", "p2"]
+    - ["p1", "p2"]  → ["p1", "p2"]
+    """
     if val is None:
         return []
     if isinstance(val, list):
@@ -68,7 +53,14 @@ def _align_cache_paths(
     ref_paths: List[str],
     fallback_prefix: str = "cache",
 ) -> List[str]:
-    """Align cache_paths to the length of ref_paths."""
+    """Align cache_paths to ref_paths length.
+
+    then：
+      -      → 
+      - cache  1  → : cache/split_0, cache/split_1, ...
+      -        →  fallback_prefix/split_0, ...
+      -    → 
+    """
     n = len(ref_paths)
     if len(cache_paths) == 0:
         return [os.path.join(fallback_prefix, f"split_{i}") for i in range(n)]
@@ -78,14 +70,14 @@ def _align_cache_paths(
     if len(cache_paths) == n:
         return cache_paths
     raise ValueError(
-        f"cache_path length ({len(cache_paths)}) does not match data path length ({n}).\n"
+        f"cache_path  ({len(cache_paths)})  and  ({n}) 。\n"
         f"  cache_path : {cache_paths}\n"
         f"  data_path  : {ref_paths}"
     )
 
 
 # ---------------------------------------------------------------------------
-# Dataset: single source with cache
+# Dataset：
 # ---------------------------------------------------------------------------
 
 class PISSGraphDataset(Dataset):
@@ -153,7 +145,7 @@ class CachedProfileGraphDataset(Dataset):
             for gid in self.graph_ids:
                 self._build_and_cache_if_not_exist(gid)
 
-    # --- File discovery ---
+    # ---  ---
 
     def _find_files_for_graph(self, graph_id: str) -> Dict[str, Path]:
         edge_candidates = [
@@ -180,7 +172,7 @@ class CachedProfileGraphDataset(Dataset):
             f"for graph '{graph_id}' in {self.dataset_path}"
         )
 
-    # --- Build and cache ---
+    # --- build and  ---
 
     def _build_and_cache_if_not_exist(self, graph_id: str):
         save_path = self.cache_path / f"{graph_id}{self.cache_suffix}"
@@ -261,7 +253,7 @@ class CachedProfileGraphDataset(Dataset):
         torch.save(data, save_path)
         return data
 
-    # --- Dataset interface ---
+    # --- Dataset  ---
 
     def __len__(self):
         return len(self.graph_ids)
@@ -282,14 +274,14 @@ class CachedProfileGraphDataset(Dataset):
 
 
 # ---------------------------------------------------------------------------
-# Helper functions
+# 
 # ---------------------------------------------------------------------------
 
 def get_graph_ids(
     dataset_path: str,
     label_suffix: str = "_profile_label.json",
 ) -> List[str]:
-    """Return all graph IDs matching label_suffix in a directory."""
+    """Returns ID（ label_suffix ），thenReturnslist。"""
     if not os.path.isdir(dataset_path):
         return []
     label_files = [f for f in os.listdir(dataset_path) if f.endswith(label_suffix)]
@@ -298,7 +290,7 @@ def get_graph_ids(
 
 
 def piss_collate(data_list):
-    """Filter None values and return (anchor_batch, positive_batch)."""
+    """collate_fn： None，Returns (anchor_batch, positive_batch)。"""
     valid_pairs = [pair for pair in data_list if pair is not None]
     if not valid_pairs:
         return None, None
@@ -310,7 +302,7 @@ def piss_collate(data_list):
 
 
 # ---------------------------------------------------------------------------
-# Multi-source path loading
+# （）
 # ---------------------------------------------------------------------------
 
 def _load_split_data(
@@ -324,7 +316,13 @@ def _load_split_data(
     label_tau_key: str,
     label_profile_key: str,
 ) -> List[PyGData]:
-    """Load one split from multiple source paths and merge samples."""
+    """ split ，list。
+
+    Args:
+        data_paths  : list（）
+        cache_bases :  and  data_paths list
+        split_name  : "train" | "val" | "test"，
+    """
     all_data: List[PyGData] = []
 
     for src_idx, (data_path, cache_base) in enumerate(zip(data_paths, cache_bases)):
@@ -336,7 +334,7 @@ def _load_split_data(
             )
             continue
 
-        # Use one cache subdirectory per source to avoid graph_id collisions.
+        # ， graph_id 
         split_cache = str(Path(cache_base) / split_name)
 
         dataset = CachedProfileGraphDataset(
@@ -362,7 +360,7 @@ def _load_split_data(
 
 
 # ---------------------------------------------------------------------------
-# Public API
+# 
 # ---------------------------------------------------------------------------
 
 def get_profile_dataloaders(
@@ -381,22 +379,29 @@ def get_profile_dataloaders(
     label_tau_key: str = "tau_grid_full",
     label_profile_key: str = "collapse_profile_full",
 ):
-    """Build train/validation/test dataloaders with optional multi-source mixing."""
-    # --- Normalize inputs to lists ---
+    """buildtraining / validation / test DataLoader，。
+
+    Args：single string / comma-separated / list。
+    cache_path ：
+      -  and  train_path  → 
+      -  1           →  split_0, split_1, ...
+      -              →  cache/split_i
+    """
+    # --- list ---
     train_paths = _to_path_list(train_path)
     val_paths   = _to_path_list(val_path)
     test_paths  = _to_path_list(test_path)
     cache_list  = _to_path_list(cache_path)
 
     if not train_paths:
-        raise RuntimeError("train_path cannot be empty. Please check the configuration.")
+        raise RuntimeError("train_path ，。")
 
-    # --- Align cache directories ---
-    # Match train sources and cache roots one-to-one.
+    # ---  ---
+    # train  and  cache 
     train_caches = _align_cache_paths(cache_list, train_paths, fallback_prefix="cache")
 
-    # val/test reuse train cache roots when source counts match; split
-    # subdirectories keep the cached data distinct.
+    # val / test （ and  train ， split）
+    # If  val/test  and  train ，
     if len(val_paths) == len(train_paths):
         val_caches = train_caches
     else:
@@ -407,7 +412,7 @@ def get_profile_dataloaders(
     else:
         test_caches = _align_cache_paths(cache_list, test_paths, fallback_prefix="cache")
 
-    # --- Common loading parameters ---
+    # --- Args ---
     shared_kwargs = dict(
         tau_values=tau_values,
         feature_dim=feature_dim,
@@ -416,7 +421,7 @@ def get_profile_dataloaders(
         label_profile_key=label_profile_key,
     )
 
-    # --- Load each split ---
+    # ---  split  ---
     print(f"[*] Loading train data from {len(train_paths)} source(s) ...")
     train_data_list = _load_split_data(
         train_paths, train_caches, "train", rebuild_cache=rebuild_cache, **shared_kwargs
@@ -434,7 +439,7 @@ def get_profile_dataloaders(
 
     if not train_data_list:
         raise RuntimeError(
-            f"Training set is empty. Please check train_path: {train_paths}"
+            f"training， train_path: {train_paths}"
         )
 
     print(
@@ -444,12 +449,12 @@ def get_profile_dataloaders(
         f"test: {len(test_data_list)}"
     )
 
-    # --- Build PISSGraphDataset ---
+    # --- build PISSGraphDataset ---
     train_dataset = PISSGraphDataset(train_data_list, k=piss_k)
     val_dataset   = PISSGraphDataset(val_data_list,   k=0)
     test_dataset  = PISSGraphDataset(test_data_list,  k=0)
 
-    # --- Build DataLoader ---
+    # --- build DataLoader ---
     loader_kwargs = {"num_workers": num_workers, "pin_memory": use_gpu}
     if num_workers > 0:
         loader_kwargs["persistent_workers"] = True

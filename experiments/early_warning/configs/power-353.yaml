@@ -32,6 +32,6 @@ base_model_params:
   activation_fn: 'gelu'
   input_dim: 7
   feature_dim: 3
-
+  label_scale_factor: 100.0
 plotting:
   enabled: true

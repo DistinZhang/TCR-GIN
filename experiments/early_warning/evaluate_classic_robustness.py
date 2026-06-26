@@ -317,6 +317,7 @@ def extract_lcc_from_removal_item(item):
         return None
 
     seq = list(item)
+
     if len(seq) >= 4:
         try:
             v = float(seq[-2])
@@ -409,12 +410,136 @@ def parse_csv_result_file(file_path: Path, initial_graph, initial_size: int, def
                 df_curve = pd.DataFrame({'step': steps, 'LCC': lccs}).sort_values('step')
                 if df_curve['step'].min() > 0:
                     df_curve = pd.concat([pd.DataFrame([{'step': 0, 'LCC': 1.0}]), df_curve])
+
+                # Mark collapse step (first step where LCC rounded to 2 decimals <= threshold)
+                df_curve['is_collapse_step'] = False
+                df_curve['LCC_rounded'] = df_curve['LCC'].round(2)
+                below_or_equal_threshold = df_curve[df_curve['LCC_rounded'] <= round(default_threshold, 2)]
+                if not below_or_equal_threshold.empty:
+                    first_collapse_idx = below_or_equal_threshold.index[0]
+                    df_curve.loc[first_collapse_idx, 'is_collapse_step'] = True
+                else:
+                    df_curve.loc[df_curve.index[-1], 'is_collapse_step'] = True
+
+                df_curve = df_curve.drop(columns=['LCC_rounded'])
                 results[algo_short] = df_curve
 
         return results, []
     except Exception as e:
         print(f" [Error] Failed to parse results file: {e}")
         return {}, []
+
+
+def find_original_graph(input_root: Path, dataset_name: str):
+    """
+    Find the original network graph file.
+
+    Tries multiple common patterns:
+    - <dataset_name>/<network_name>_edges.npz
+    - <dataset_name>/<network_name>.gt
+    - <dataset_name>/<network_name>.npz
+    """
+    # Common patterns for original graph files
+    patterns = [
+        f"*_aggr_edges.npz",
+        f"*_aggr.npz",
+        f"*_edges.npz",
+        f"*.gt",
+        f"*_multiplex_aggr_edges.npz",
+        f"*_multiplex_aggr.npz",
+    ]
+
+    for pattern in patterns:
+        candidates = list(input_root.glob(pattern))
+        if candidates:
+            # Return the first match that doesn't contain "Remnants" in path
+            for c in candidates:
+                if "Remnants" not in str(c):
+                    return c
+
+    return None
+
+
+def extract_removal_sequence_and_last_lcc(file_path: Path):
+    """
+    Extract removal sequences and last LCC from CSV results file.
+
+    Returns:
+        dict with structure:
+        {
+            'simple_lists': {algo: [node_ids]},  # DC/BC/DCR/BCR
+            'tuple_data': {algo: last_lcc_value}  # Other 24 algorithms
+        }
+    """
+    file_path = Path(file_path)
+    simple_lists = {}
+    tuple_data = {}
+
+    try:
+        if file_path.suffix.lower() == '.xlsx':
+            df = pd.read_excel(file_path)
+        else:
+            try:
+                df = pd.read_csv(file_path, sep=None, engine='python')
+            except Exception:
+                df = pd.read_csv(file_path)
+
+        df.columns = [str(c).strip().lower() for c in df.columns]
+
+        rem_col = None
+        for c in df.columns:
+            if 'removal' in c:
+                rem_col = c
+                break
+
+        if 'heuristic' not in df.columns or not rem_col:
+            return {'simple_lists': {}, 'tuple_data': {}}
+
+        for _, row in df.iterrows():
+            heuristic = row.get('heuristic')
+            static = row.get('static')
+            raw = row.get(rem_col)
+
+            if pd.isna(raw):
+                continue
+
+            # Determine algorithm name
+            algo_short = infer_algo_from_results_row(heuristic, static)
+            if algo_short == "Unknown":
+                continue
+
+            s = _clean_removals_string(raw)
+            if not s:
+                continue
+
+            try:
+                data_list = ast.literal_eval(s)
+            except Exception:
+                continue
+
+            if not isinstance(data_list, (list, tuple)) or not data_list:
+                continue
+
+            # Check if it's a simple list (DC/BC/DCR/BCR)
+            is_simple_list = all(
+                isinstance(x, (int, np.integer)) or (isinstance(x, str) and x.isdigit())
+                for x in data_list
+            )
+
+            if is_simple_list:
+                # Simple node ID list
+                simple_lists[algo_short] = [int(x) for x in data_list]
+            else:
+                # Tuple-based data - extract last LCC
+                last_item = data_list[-1]
+                lcc = extract_lcc_from_removal_item(last_item)
+                if lcc is not None:
+                    tuple_data[algo_short] = float(lcc)
+
+        return {'simple_lists': simple_lists, 'tuple_data': tuple_data}
+    except Exception as e:
+        print(f" [Error] Failed to extract removal sequences: {e}")
+        return {'simple_lists': {}, 'tuple_data': {}}
 
 
 # ==============================================================================
@@ -513,27 +638,248 @@ def compute_metrics_for_file(task):
         'natural_connectivity': calc_natural_connectivity(G, initial_size),
         'R(rand)': simulate_attack_metrics(G, initial_size, 'random')['R'],
         'R(DCR)': simulate_attack_metrics(G, initial_size, 'degree')['R'],
+        # 'natural_connectivity': 0,
+        # 'R(rand)': 0,
+        # 'R(DCR)': 0,
     }
     return (algo, step, metrics)
 
 
-# ==============================================================================
-# Sequential supplement for R1 / R2 collapse steps
-# ==============================================================================
-def supplement_random_collapse(clean_file_map, initial_size, collapse_target, dataset_name):
+def compute_collapse_step_from_original_graph(original_graph, removal_sequence, initial_size, collapse_target):
+    """
+    Remove nodes from the original graph according to the removal sequence,
+    and return the LCC after the last removal.
+
+    Args:
+        original_graph: The original graph
+        removal_sequence: List of node IDs to remove in order
+        initial_size: Original network size
+        collapse_target: Collapse threshold
+
+    Returns:
+        final_lcc: LCC ratio after removing all nodes in sequence
+    """
+    if original_graph is None or not removal_sequence:
+        return None
+
+    G = original_graph.copy()
+
+    # Remove nodes in sequence
+    for node_id in removal_sequence:
+        if G.has_node(node_id):
+            G.remove_node(node_id)
+
+    # Calculate final LCC
+    if G.number_of_nodes() > 0:
+        largest_cc = max(nx.connected_components(G), key=len)
+        final_lcc = len(largest_cc) / initial_size
+    else:
+        final_lcc = 0.0
+
+    return final_lcc
+
+
+def compute_collapse_step_random_ordered(last_graph, initial_size, collapse_target):
+    """
+    For R1/R2: Try removing nodes from the last remaining graph in order of node ID
+    (smallest to largest) until LCC drops below threshold.
+
+    Args:
+        last_graph: The last remaining graph
+        initial_size: Original network size
+        collapse_target: Collapse threshold
+
+    Returns:
+        final_lcc: LCC ratio after successful removal, or None if no node works
+    """
+    if last_graph is None or last_graph.number_of_nodes() == 0:
+        return None
+
+    threshold_val = collapse_target * initial_size
+    connected_components = sorted(nx.connected_components(last_graph), key=len, reverse=True)
+
+    if not connected_components:
+        return 0.0
+
+    curr_lcc = len(connected_components[0])
+    curr_lcc_ratio = curr_lcc / initial_size
+
+    # If already below threshold, return current LCC
+    if curr_lcc_ratio < collapse_target:
+        return curr_lcc_ratio
+
+    # Get nodes from largest component and sort by ID
+    largest_cc_nodes = sorted(list(connected_components[0]))
+
+    # Try removing nodes in order of ID
+    for node in largest_cc_nodes:
+        g_temp = last_graph.copy()
+        g_temp.remove_node(node)
+
+        if g_temp.number_of_nodes() > 0:
+            temp_lcc = len(max(nx.connected_components(g_temp), key=len))
+        else:
+            temp_lcc = 0
+
+        if temp_lcc < threshold_val:
+            return temp_lcc / initial_size
+
+    return None
+
+
+def supplement_collapse_with_csv_data(clean_file_map, initial_size, collapse_target, dataset_name,
+                                     original_graph, csv_data):
+    """
+    Compute collapse steps for algorithms based on CSV data and original graph.
+
+    Three types of algorithms:
+    1. DC/BC/DCR/BCR: Use original graph + CSV removal sequence
+    2. R1/R2: Random ordered removal from last remaining graph
+    3. Others (24 algos): Use LCC value directly from CSV tuple data
+
+    Args:
+        clean_file_map: dict mapping (algo, step) to filepath
+        initial_size: initial network size
+        collapse_target: collapse threshold
+        dataset_name: dataset name
+        original_graph: original network graph
+        csv_data: dict with 'simple_lists' and 'tuple_data'
+
+    Returns:
+        list of extra records for step=-1
+    """
     extra_records = []
-    target_algos = ['R1', 'R2']
     algo_max_files = {}
 
+    simple_lists = csv_data.get('simple_lists', {})
+    tuple_data = csv_data.get('tuple_data', {})
+
+    # Find the last step file for each algorithm
     for (algo, step), fpath in clean_file_map.items():
-        if algo in target_algos:
-            if algo not in algo_max_files or step > algo_max_files[algo][0]:
-                algo_max_files[algo] = (step, fpath)
+        if algo not in algo_max_files or step > algo_max_files[algo][0]:
+            algo_max_files[algo] = (step, fpath)
+
+    for algo, (last_step, fpath) in algo_max_files.items():
+        print(f"    -> {algo}: checking step {last_step}...")
+
+        # Type 1: DC/BC/DCR/BCR - use original graph + CSV removal sequence
+        if algo in simple_lists:
+            if original_graph is None:
+                print(f"       ERROR: No original graph for {algo}")
+                continue
+
+            removal_seq = simple_lists[algo]
+            print(f"       Using CSV removal sequence ({len(removal_seq)} nodes)")
+
+            final_lcc = compute_collapse_step_from_original_graph(
+                original_graph, removal_seq, initial_size, collapse_target
+            )
+
+            if final_lcc is not None:
+                virt_fname = f"{dataset_name}-{algo}_-1_edges.npz"
+                rec = {
+                    'filename': virt_fname,
+                    'algorithm': algo,
+                    'step': -1,
+                    'network_size': max(0, initial_size - len(removal_seq)),
+                    'LCC': final_lcc,
+                    'natural_connectivity': np.nan,
+                    'R(rand)': np.nan,
+                    'R(DCR)': np.nan,
+                    'Predicted DC': np.nan
+                }
+                extra_records.append(rec)
+                print(f"       Collapse found: LCC={final_lcc:.4f}")
+            else:
+                print(f"       Failed to compute collapse")
+
+        # Type 2: R1/R2 - random ordered removal from last remaining graph
+        elif algo in ['R1', 'R2']:
+            G = load_graph_robust(fpath)
+            if G is None or G.number_of_nodes() == 0:
+                print(f"       ERROR: Cannot load graph")
+                continue
+
+            print(f"       Using ordered node removal (by node ID)")
+            final_lcc = compute_collapse_step_random_ordered(G, initial_size, collapse_target)
+
+            if final_lcc is not None:
+                virt_fname = f"{dataset_name}-{algo}_-1_edges.npz"
+                rec = {
+                    'filename': virt_fname,
+                    'algorithm': algo,
+                    'step': -1,
+                    'network_size': G.number_of_nodes() - 1,
+                    'LCC': final_lcc,
+                    'natural_connectivity': np.nan,
+                    'R(rand)': np.nan,
+                    'R(DCR)': np.nan,
+                    'Predicted DC': np.nan
+                }
+                extra_records.append(rec)
+                print(f"       Collapse found: LCC={final_lcc:.4f}")
+            else:
+                print(f"       Failed to find collapse node")
+
+        # Type 3: Other 24 algorithms - use LCC from CSV tuple data
+        elif algo in tuple_data:
+            final_lcc = tuple_data[algo]
+            print(f"       Using LCC from CSV tuple data: {final_lcc:.4f}")
+
+            G = load_graph_robust(fpath)
+            network_size = G.number_of_nodes() if G else initial_size
+
+            virt_fname = f"{dataset_name}-{algo}_-1_edges.npz"
+            rec = {
+                'filename': virt_fname,
+                'algorithm': algo,
+                'step': -1,
+                'network_size': network_size,
+                'LCC': final_lcc,
+                'natural_connectivity': np.nan,
+                'R(rand)': np.nan,
+                'R(DCR)': np.nan,
+                'Predicted DC': np.nan
+            }
+            extra_records.append(rec)
+            print(f"       Collapse record created")
+
+        else:
+            print(f"       WARNING: No CSV data for {algo}, skipping")
+
+    return extra_records
+
+
+# ==============================================================================
+# Sequential supplement for all algorithms that need collapse steps (OLD VERSION - REPLACED)
+# ==============================================================================
+def supplement_random_collapse_OLD(clean_file_map, initial_size, collapse_target, dataset_name, random_seed=42, csv_last_nodes=None):
+    """
+    Add collapse points for all algorithms whose removal lists end while LCC remains above the threshold.
+
+    Prefer the final node specified in csv_last_nodes when available; otherwise remove a random node.
+
+    Args:
+        clean_file_map: File mapping {(algo, step): filepath}.
+        initial_size: Initial network size.
+        collapse_target: Collapse threshold.
+        dataset_name: Dataset name.
+        random_seed: Random seed for reproducibility.
+        csv_last_nodes: {algo: last_node_id} read from CSV files.
+    """
+    extra_records = []
+    algo_max_files = {}
+    csv_last_nodes = csv_last_nodes or {}
+
+    # Find the last step for each algorithm
+    for (algo, step), fpath in clean_file_map.items():
+        if algo not in algo_max_files or step > algo_max_files[algo][0]:
+            algo_max_files[algo] = (step, fpath)
 
     threshold_val = collapse_target * initial_size
 
     for algo, (last_step, fpath) in algo_max_files.items():
-        print(f" -> [Supp] Estimating collapse point for {algo} from step {last_step}...")
+        print(f" -> [Supp] Checking collapse point for {algo} from step {last_step}...")
         G = load_graph_robust(fpath)
         if G is None or G.number_of_nodes() == 0:
             continue
@@ -544,34 +890,70 @@ def supplement_random_collapse(clean_file_map, initial_size, collapse_target, da
         else:
             curr_lcc = len(connected_components[0])
 
-        if curr_lcc < threshold_val:
+        # Check if already below threshold
+        curr_lcc_ratio = curr_lcc / initial_size
+        if curr_lcc_ratio < collapse_target:
+            print(f"    -> {algo} step {last_step} already below threshold (LCC={curr_lcc_ratio:.4f})")
             continue
 
-        largest_cc_nodes = list(connected_components[0])
-        np.random.shuffle(largest_cc_nodes)
-
+        # Need to find collapse point
+        print(f"    -> {algo} step {last_step} above threshold (LCC={curr_lcc_ratio:.4f}), estimating collapse...")
         found_collapse = False
         final_lcc = 0.0
-        for node in largest_cc_nodes:
-            g_temp = G.copy()
-            g_temp.remove_node(node)
-            if g_temp.number_of_nodes() > 0:
-                temp_lcc = len(max(nx.connected_components(g_temp), key=len))
-            else:
-                temp_lcc = 0
+        removed_node = None
 
-            if temp_lcc < threshold_val:
-                found_collapse = True
-                final_lcc = temp_lcc / initial_size
-                break
+        # First try the last node from CSV if available
+        if algo in csv_last_nodes:
+            candidate_node = csv_last_nodes[algo]
+            print(f"    -> Trying CSV last node {candidate_node}...")
+            if G.has_node(candidate_node):
+                g_temp = G.copy()
+                g_temp.remove_node(candidate_node)
+                if g_temp.number_of_nodes() > 0:
+                    temp_lcc = len(max(nx.connected_components(g_temp), key=len))
+                else:
+                    temp_lcc = 0
+
+                if temp_lcc < threshold_val:
+                    found_collapse = True
+                    final_lcc = temp_lcc / initial_size
+                    removed_node = candidate_node
+                    print(f"    -> CSV node {candidate_node} works: LCC={final_lcc:.4f} < {collapse_target}")
+                else:
+                    print(f"    -> CSV node {candidate_node} does not bring LCC below threshold (LCC={temp_lcc/initial_size:.4f}), falling back to random")
+            else:
+                print(f"    -> CSV node {candidate_node} not in graph, falling back to random")
+
+        # If CSV node doesn't work, fall back to random removal
+        if not found_collapse:
+            largest_cc_nodes = list(connected_components[0])
+
+            # Set random seed for reproducibility
+            seed = random_seed + hash(algo) % 10000 + last_step
+            np.random.seed(seed)
+
+            np.random.shuffle(largest_cc_nodes)
+
+            for node in largest_cc_nodes:
+                g_temp = G.copy()
+                g_temp.remove_node(node)
+                if g_temp.number_of_nodes() > 0:
+                    temp_lcc = len(max(nx.connected_components(g_temp), key=len))
+                else:
+                    temp_lcc = 0
+
+                if temp_lcc < threshold_val:
+                    found_collapse = True
+                    final_lcc = temp_lcc / initial_size
+                    removed_node = node
+                    break
 
         if found_collapse:
             virt_fname = f"{dataset_name}-{algo}_-1_edges.npz"
-            new_step = last_step + 1
             rec = {
                 'filename': virt_fname,
                 'algorithm': algo,
-                'step': new_step,
+                'step': -1,  # Explicitly mark as -1
                 'network_size': G.number_of_nodes() - 1,
                 'LCC': final_lcc,
                 'natural_connectivity': np.nan,
@@ -580,7 +962,7 @@ def supplement_random_collapse(clean_file_map, initial_size, collapse_target, da
                 'Predicted DC': np.nan
             }
             extra_records.append(rec)
-            print(f"    -> Collapse found at step {new_step}: LCC={final_lcc:.4f} < {collapse_target}")
+            print(f"    -> Collapse found: removed node {removed_node}, LCC={final_lcc:.4f} < {collapse_target}")
         else:
             print("    -> Collapse threshold was not reached by removing one node from the largest component.")
 
@@ -595,53 +977,178 @@ class TCRGINPredictor:
         self.device = device
         self.models_map = []
         self.enabled = False
+        self.input_dim_global = 3
+        self.config = {}
+        self.config_path = None
 
-        if not config_path_str or not IMPORTS_OK:
+        if not config_path_str:
+            return
+
+        if not IMPORTS_OK:
+            print("[TCR-GIN] Project imports failed. Predictor disabled.")
             return
 
         try:
             self.config_path = Path(config_path_str).resolve()
-            with open(self.config_path, 'r') as f:
-                self.config = yaml.safe_load(f)
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                self.config = yaml.safe_load(f) or {}
+
+            base_params = self.config.get('base_model_params', {})
+            self.input_dim_global = base_params.get(
+                'feature_dim',
+                base_params.get('input_dim', 7)
+            )
+
             self._load_suite()
+
             if self.models_map:
                 self.enabled = True
-        except Exception:
-            pass
+                print(f"[TCR-GIN] Loaded {len(self.models_map)} model(s).")
+        except Exception as e:
+            print(f"[TCR-GIN] Init error: {e}")
+            self.models_map = []
+            self.enabled = False
 
-    def _resolve_paths(self, model_info, config_dir, project_root):
+    @staticmethod
+    def _norm_key(k):
+        """
+        Normalize keys like:
+          label_scale_factor
+          labelScaleFactor
+          Label-Scale-Factor
+        into:
+          labelscalefactor
+        """
+        return re.sub(r'[^a-z0-9]', '', str(k).lower())
+
+    @staticmethod
+    def _to_positive_float(v):
+        try:
+            x = float(v)
+            if x <= 0:
+                return None
+            return x
+        except Exception:
+            return None
+
+    def _lookup_label_scale_factor(self, d):
+        """
+        Read label_scale_factor from one dictionary only.
+        This intentionally does not read label_stats.json or any outputs file.
+        """
+        if not isinstance(d, dict):
+            return None
+
+        for k, v in d.items():
+            if self._norm_key(k) == "labelscalefactor":
+                return self._to_positive_float(v)
+
+        return None
+
+    def _get_label_scale_factor_from_config(self, model_info, merged_params):
+        """
+        Strictly read label_scale_factor from the YAML model config.
+
+        Search priority:
+          1. model_suite item params
+          2. model_suite item itself
+          3. merged base_params + model_info params
+          4. base_model_params
+          5. fixed_params
+          6. training_params
+          7. train_params
+          8. top-level config
+
+        This function never reads label_stats.json.
+        """
+        candidate_dicts = [
+            model_info.get("params", {}) if isinstance(model_info, dict) else {},
+            model_info if isinstance(model_info, dict) else {},
+            merged_params if isinstance(merged_params, dict) else {},
+            self.config.get("base_model_params", {}),
+            self.config.get("fixed_params", {}),
+            self.config.get("training_params", {}),
+            self.config.get("train_params", {}),
+            self.config,
+        ]
+
+        for d in candidate_dicts:
+            scale = self._lookup_label_scale_factor(d)
+            if scale is not None:
+                return scale
+
+        raise KeyError(
+            "label_scale_factor was not found in model_config YAML. "
+            "Add, for example, `label_scale_factor: 100.0` under "
+            "`base_model_params`, `training_params`, top-level config, "
+            "or each `model_suite[].params`."
+        )
+
+    def _resolve_paths(self, model_info, config_dir, project_root_guess):
         if 'path' in model_info:
             raw = model_info['path']
-            candidates = [raw, str(config_dir / raw), str(project_root / raw)]
+            candidates = [
+                raw,
+                str(config_dir / raw),
+                str(project_root_guess / raw)
+            ]
             for cand in candidates:
                 if glob.glob(cand):
                     return cand
 
         if 'base_dir' in model_info:
             raw_base = model_info['base_dir']
-            base_search = config_dir / raw_base
-            if not base_search.exists():
-                base_search = project_root / raw_base
-            if base_search.exists():
-                exp_dirs = sorted(list(base_search.glob('exp_*')))
-                if exp_dirs:
-                    return str(exp_dirs[0] / 'model_run_*.pt')
+            candidates = [
+                config_dir / raw_base,
+                project_root_guess / raw_base
+            ]
+
+            for base_search in candidates:
+                if base_search.exists():
+                    exp_dirs = sorted(list(base_search.glob('exp_*')))
+                    if exp_dirs:
+                        return str(exp_dirs[0] / 'model_run_*.pt')
+
         return None
 
     def _load_suite(self):
         base_params = self.config.get('base_model_params', {})
         config_dir = self.config_path.parent
-        project_root_guess = config_dir.parents[1]
+
+        # Prefer the real project_root computed near the import block.
+        try:
+            project_root_guess = project_root
+        except NameError:
+            project_root_guess = (
+                config_dir.parents[1]
+                if len(config_dir.parents) > 1
+                else config_dir.parent
+            )
+
+        key_map = {
+            'modelactivationfn': 'activation_fn',
+            'modeljktype': 'jk_type',
+            'modelusevirtualnode': 'use_virtual_node',
+            'pissconsistencylambda': 'consistency_lambda',
+            'pisspissk': 'piss_k',
+            'modelfeaturedim': 'feature_dim',
+            'labelscalefactor': 'label_scale_factor',
+            'modellabelscalefactor': 'label_scale_factor',
+        }
+
         model_suite = self.config.get('model_suite', [])
 
         for model_info in model_suite:
             node_range = model_info.get('node_range', [0, -1])
             path_pattern = self._resolve_paths(model_info, config_dir, project_root_guess)
+
             if not path_pattern:
+                print(f"[TCR-GIN] No model path resolved for model_info: {model_info}")
                 continue
 
             model_files = sorted(glob.glob(path_pattern))
             if not model_files:
+                print(f"[TCR-GIN] No model files matched: {path_pattern}")
                 continue
 
             if len(model_files) <= MODEL_INDEX_TO_USE:
@@ -649,54 +1156,34 @@ class TCRGINPredictor:
             else:
                 target_model_path = Path(model_files[MODEL_INDEX_TO_USE])
 
-            scale_factor = DEFAULT_SCALE_FACTOR
-            candidates_p = [
-                target_model_path.parent / 'label_stats.json',
-                target_model_path.parent.parent / 'outputs' / 'label_stats.json'
-            ]
-
-            model_run_dir = target_model_path.parent
-            if 'models' in str(model_run_dir):
-                candidates_p.append(
-                    Path(str(model_run_dir).replace('models', 'outputs')) / 'label_stats.json')
-            for p in candidates_p:
-                if p.exists():
-                    try:
-                        with open(p, 'r') as f:
-                            stats = json.load(f)
-                            scale_factor = stats.get('scale_factor', DEFAULT_SCALE_FACTOR)
-                            break
-                    except Exception:
-                        pass
-
-            current_params = base_params.copy()
-            if 'params' in model_info:
-                current_params.update(model_info['params'])
-
-            key_map = {
-                'modelactivationfn': 'activation_fn',
-                'modeljktype': 'jk_type',
-                'modelusevirtualnode': 'use_virtual_node',
-                'modelfeaturedim': 'feature_dim'
+            params = {
+                **base_params,
+                **(model_info.get('params', {}) if isinstance(model_info, dict) else {})
             }
+
+
+            scale_factor = self._get_label_scale_factor_from_config(model_info, params)
+
             final_params = {}
-            for k, v in current_params.items():
-                short_k = key_map.get(k.lower(), k)
+
+            for k, v in params.items():
+                short_k = key_map.get(self._norm_key(k), k)
+
                 if isinstance(v, str):
-                    if v.lower() == 'true':
+                    vv = v.strip()
+                    if vv.lower() == 'true':
                         v = True
-                    elif v.lower() == 'false':
+                    elif vv.lower() == 'false':
                         v = False
-                    elif '.' in v:
-                        try:
-                            v = float(v)
-                        except Exception:
-                            pass
                     else:
                         try:
-                            v = int(v)
+                            if any(ch in vv for ch in ['.', 'e', 'E']):
+                                v = float(vv)
+                            else:
+                                v = int(vv)
                         except Exception:
-                            pass
+                            v = vv
+
                 final_params[short_k] = v
 
             if 'feature_dim' in final_params:
@@ -707,55 +1194,73 @@ class TCRGINPredictor:
                 model = TCR_GIN(model_args).to(self.device)
                 model.load_state_dict(torch.load(target_model_path, map_location=self.device))
                 model.eval()
+
                 self.models_map.append({
                     'range': node_range,
                     'model': model,
                     'scale': scale_factor,
-                    'input_dim': final_params.get('input_dim', 7)
+                    'input_dim': final_params.get('input_dim', 7),
                 })
-            except Exception:
-                pass
+
+            except Exception as e:
+                print(f"[TCR-GIN] Failed to load {target_model_path}: {e}")
 
     def predict(self, file_path):
         if not self.enabled:
-            return 0.0
+            return 0.001
 
         try:
-            stem = str(file_path).replace('_edges.npz', '')
-            input_dim = 7
-            if self.models_map:
-                input_dim = self.models_map[0]['input_dim']
+            input_dim = (
+                self.models_map[0]['input_dim']
+                if self.models_map
+                else self.input_dim_global
+            )
 
+            stem = str(file_path).replace('_edges.npz', '')
             data = load_single_graph(stem, feature_dim=input_dim)
+
             if data is None:
-                return 0.0
+                return 0.001
 
             N = data.num_nodes
             selected = None
+
             for item in self.models_map:
-                rng = item['range']
-                if rng[1] == -1:
-                    if N >= rng[0]:
+                lo, hi = item['range']
+                if hi == -1:
+                    if N >= lo:
                         selected = item
                         break
                 else:
-                    if rng[0] <= N < rng[1]:
+                    if lo <= N < hi:
                         selected = item
                         break
 
             if selected is None and self.models_map:
                 selected = self.models_map[-1]
-            if selected is None:
-                return 0.0
 
-            model = selected['model']
-            scale = selected['scale']
+            if selected is None:
+                return 0.001
+
             batch = Batch.from_data_list([data]).to(self.device)
+
             with torch.no_grad():
-                pred_norm = model(batch).item()
-            return max(0.001, pred_norm / scale)
-        except Exception:
-            return 0.0
+                pred_norm = selected['model'](batch)
+
+            # Same as calculate_decision_window.py:
+            #   pred_real = model_output / label_scale_factor
+            #   pred_holistic = clamp(pred_real, 0, 1)
+            pred_real = pred_norm / selected['scale']
+            pred_holistic = float(
+                torch.clamp(pred_real, 1/N, 1.0).view(-1)[0].item()
+            )
+
+            return pred_holistic
+
+        except Exception as e:
+            print(f"[TCR-GIN] Predict failed for {file_path}: {e}")
+            return 0.001
+
 
 
 # ==============================================================================
@@ -1189,7 +1694,7 @@ def main():
     parser.add_argument(
         '--n_workers',
         type=int,
-        default=16,
+        default=25,
         help="Number of worker processes. Use 0 for automatic cpu_count()."
     )
     parser.add_argument(
@@ -1197,7 +1702,20 @@ def main():
         action='store_true',
         help="Skip plotting and only export the CSV."
     )
+    parser.add_argument(
+        '--random_seed',
+        type=int,
+        default=42,
+        help='Random seed for reproducibility'
+    )
     args = parser.parse_args()
+
+    # Set global random seeds for reproducibility
+    np.random.seed(args.random_seed)
+    torch.manual_seed(args.random_seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(args.random_seed)
+        torch.cuda.manual_seed_all(args.random_seed)
 
     input_root = Path(args.input_root)
     out_dir = Path(args.output_dir)
@@ -1337,16 +1855,12 @@ def main():
                 ns = args.initial_size
             row['Predicted DC'] = pred * (ns / args.initial_size)
 
-    r1r2_records = supplement_random_collapse(clean_file_map, args.initial_size, args.collapse_target, dataset_name)
-    if r1r2_records:
-        data_records.extend(r1r2_records)
-
+    # Don't call supplement here - will do it after merge
     df_updated = pd.DataFrame(data_records)
 
     results_file = get_results_file_path(input_root)
     if results_file:
         curves, _ = parse_csv_result_file(results_file, initial_graph, args.initial_size, args.collapse_target)
-        curve_rows = []
 
         dataset_long_prefix = input_root.name
         if not df_updated.empty:
@@ -1356,55 +1870,163 @@ def main():
                 if len(parts) >= 2:
                     dataset_long_prefix = "-".join(parts[:-1])
 
+        # Only keep collapse steps from CSV curves
+        curve_rows = []
         for algo, curve_df in curves.items():
-            for _, r in curve_df.iterrows():
-                curr_step = int(r['step'])
-                estimated_size = max(0, args.initial_size - curr_step)
-                curve_rows.append({
-                    'filename': f"{dataset_long_prefix}-{algo}_-1_edges.npz",
-                    'algorithm': algo,
-                    'step': curr_step,
-                    'network_size': estimated_size,
-                    'LCC_curve': float(r['LCC'])
-                })
+            collapse_rows = curve_df[curve_df.get('is_collapse_step', pd.Series([False]*len(curve_df))) == True]
+            if not collapse_rows.empty:
+                for _, r in collapse_rows.iterrows():
+                    curr_step = int(r['step'])
+                    estimated_size = max(0, args.initial_size - curr_step)
+                    curve_rows.append({
+                        'filename': f"{dataset_long_prefix}-{algo}_-1_edges.npz",
+                        'algorithm': algo,
+                        'step': curr_step,
+                        'network_size': estimated_size,
+                        'LCC_curve': float(r['LCC']),
+                        'is_collapse_step': True
+                    })
 
         df_curve = pd.DataFrame(curve_rows)
         if not df_curve.empty:
             if df_updated.empty:
                 df_final = df_curve.rename(columns={'LCC_curve': 'LCC'})
+                df_final = df_final.drop(columns=['is_collapse_step'])
             else:
                 df_updated['step'] = df_updated['step'].fillna(0).astype(int)
                 df_curve['step'] = df_curve['step'].astype(int)
-                df_final = pd.merge(df_updated, df_curve, on=['algorithm', 'step'], how='outer', suffixes=('', '_c'))
-                df_final['LCC'] = df_final['LCC'].combine_first(df_final['LCC_curve'])
 
-                def fill_fname(r):
-                    if pd.notna(r['filename']) and str(r['filename']) != 'nan':
-                        return r['filename']
-                    if pd.notna(r.get('filename_c')):
-                        return r['filename_c']
-                    return f"{dataset_long_prefix}-{r['algorithm']}_-1_edges.npz"
+                # Merge logic: for each algorithm, add collapse row
+                all_rows = []
+                for algo in df_updated['algorithm'].unique():
+                    algo_disk_rows = df_updated[df_updated['algorithm'] == algo].copy()
+                    algo_curve_rows = df_curve[df_curve['algorithm'] == algo]
 
-                df_final['filename'] = df_final.apply(fill_fname, axis=1)
+                    # Remove any existing -1 rows first
+                    algo_disk_rows = algo_disk_rows[~algo_disk_rows['filename'].astype(str).str.contains('_-1_', na=False)]
 
-                if 'network_size_c' in df_final.columns:
-                    df_final['network_size'] = df_final['network_size'].combine_first(df_final['network_size_c'])
-                else:
-                    mask = df_final['network_size'].isna()
-                    df_final.loc[mask, 'network_size'] = df_final.loc[mask, 'step'].apply(
-                        lambda x: max(0, args.initial_size - x)
-                    )
+                    if not algo_curve_rows.empty:
+                        collapse_row = algo_curve_rows.iloc[0]
+                        collapse_step = int(collapse_row['step'])
+                        collapse_lcc = float(collapse_row['LCC_curve'])
 
-                cols_to_drop = ['LCC_curve', 'filename_c', 'network_size_c', 'algorithm_c']
-                df_final.drop(columns=[c for c in cols_to_drop if c in df_final.columns], inplace=True)
+                        max_disk_step = algo_disk_rows['step'].max() if not algo_disk_rows.empty else 0
+
+                        if collapse_step <= max_disk_step:
+                            # Collapse step exists in disk files, replace it
+                            if collapse_step in algo_disk_rows['step'].values:
+                                idx = algo_disk_rows[algo_disk_rows['step'] == collapse_step].index[0]
+                                algo_disk_rows.loc[idx, 'LCC'] = collapse_lcc
+                                algo_disk_rows.loc[idx, 'filename'] = f"{dataset_long_prefix}-{algo}_-1_edges.npz"
+                        else:
+                            # Collapse step is beyond disk files, add as new row
+                            new_row = pd.DataFrame([{
+                                'filename': f"{dataset_long_prefix}-{algo}_-1_edges.npz",
+                                'algorithm': algo,
+                                'step': collapse_step,
+                                'network_size': max(0, args.initial_size - collapse_step),
+                                'LCC': collapse_lcc,
+                                'natural_connectivity': np.nan,
+                                'R(rand)': np.nan,
+                                'R(DCR)': np.nan,
+                                'Predicted DC': np.nan
+                            }])
+                            algo_disk_rows = pd.concat([algo_disk_rows, new_row], ignore_index=True)
+
+                    all_rows.append(algo_disk_rows)
+
+                curve_only_algos = set(df_curve['algorithm'].unique()) - set(df_updated['algorithm'].unique())
+                for algo in curve_only_algos:
+                    algo_curve_rows = df_curve[df_curve['algorithm'] == algo]
+                    for _, r in algo_curve_rows.iterrows():
+                        new_row = pd.DataFrame([{
+                            'filename': f"{dataset_long_prefix}-{algo}_-1_edges.npz",
+                            'algorithm': algo,
+                            'step': int(r['step']),
+                            'network_size': max(0, args.initial_size - int(r['step'])),
+                            'LCC': float(r['LCC_curve']),
+                            'natural_connectivity': np.nan,
+                            'R(rand)': np.nan,
+                            'R(DCR)': np.nan,
+                            'Predicted DC': np.nan
+                        }])
+                        all_rows.append(new_row)
+
+                df_final = pd.concat(all_rows, ignore_index=True)
         else:
             df_final = df_updated
     else:
         df_final = df_updated
 
+    # For algorithms without collapse steps, compute them using CSV data and original graph
+    if not df_final.empty:
+        print(" -> [Supp] Checking algorithms that need collapse steps...")
+        algos_with_minus1 = set(
+            df_final[df_final['filename'].astype(str).str.contains('_-1_', na=False)]['algorithm'].unique()
+        )
+        all_algos = set(df_final['algorithm'].unique())
+        algos_needing_supp = all_algos - algos_with_minus1
+
+        if algos_needing_supp:
+            print(f" -> [Supp] Need to compute collapse steps for: {algos_needing_supp}")
+
+            # Find original graph
+            original_graph_file = find_original_graph(input_root, dataset_name)
+            if original_graph_file:
+                print(f" -> [Info] Found original graph: {original_graph_file.name}")
+                original_graph_for_supp = load_graph_robust(original_graph_file)
+            else:
+                print(f" -> [Warning] Original graph not found")
+                original_graph_for_supp = None
+
+            # Extract CSV data (removal sequences and last LCC values)
+            csv_data = extract_removal_sequence_and_last_lcc(results_file) if results_file else {}
+
+            # Build clean_file_map ONLY for algorithms that need supplement
+            supp_clean_file_map = {}
+            for _, row in df_final.iterrows():
+                algo = row['algorithm']
+                if algo not in algos_needing_supp:
+                    continue
+                step = int(row['step'])
+                fname = str(row['filename'])
+                if fname and fname != 'nan' and '_-1_' not in fname:
+                    # Use the file path from clean_file_map if available
+                    if (algo, step) in clean_file_map:
+                        supp_clean_file_map[(algo, step)] = clean_file_map[(algo, step)]
+
+            extra_records = supplement_collapse_with_csv_data(
+                supp_clean_file_map,
+                args.initial_size,
+                args.collapse_target,
+                dataset_name,
+                original_graph_for_supp,
+                csv_data
+            )
+
+            if extra_records:
+                df_extra = pd.DataFrame(extra_records)
+                # Ensure all required columns exist
+                for col in REQUIRED_COLUMNS:
+                    if col not in df_extra.columns:
+                        df_extra[col] = np.nan
+                df_final = pd.concat([df_final, df_extra], ignore_index=True)
+
+    # Remove rows without filename
+    if not df_final.empty:
+        df_final = df_final[df_final['filename'].notna() & (df_final['filename'] != '')]
+
     for col in REQUIRED_COLUMNS:
         if col not in df_final.columns:
             df_final[col] = np.nan
+
+    # Fix step=-1 ordering: move -1 records to end by setting step = max_step + 1
+    for algo in df_final['algorithm'].unique():
+        algo_mask = df_final['algorithm'] == algo
+        minus_one_mask = algo_mask & (df_final['step'] == -1)
+        if minus_one_mask.any():
+            max_step = df_final.loc[algo_mask & (df_final['step'] != -1), 'step'].max()
+            df_final.loc[minus_one_mask, 'step'] = max_step + 1
 
     df_final = df_final.sort_values(by=['algorithm', 'step'])
     df_final = df_final[REQUIRED_COLUMNS]

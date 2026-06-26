@@ -9,7 +9,7 @@ monotonicity_test:
     
 
 # --- Test type ---
-test_type: "single_param" 
+test_type: "single_param"
 
 # --- Model suite definition (single_param mode) ---
 model_suite:
@@ -28,7 +28,7 @@ model_suite:
     node_range: [1100, 2000]
     base_dir: "../../../models/multisource-models/1100-1900-LBWE"
 
-    
+
 # --- Base model parameters ---
 base_model_params:
   num_layers: 5

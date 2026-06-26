@@ -1,41 +1,54 @@
-# Python caches
+# Python/cache artifacts
 __pycache__/
 *.py[cod]
-*.pyo
+*$py.class
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-
-# Jupyter / IDE artifacts
 .ipynb_checkpoints/
+
+# Local environments and IDE files
+.venv/
+venv/
+env/
 .idea/
 .vscode/
+.DS_Store
+Thumbs.db
 
-# Generated experiment artifacts
-data_models_results/
-data/
-**/data/
-outputs/
-**/outputs/
-results/
-**/results/
-cache/
-temp_data/
-checkpoints/
-models/**
-**/models/**
-!models/.gitkeep
-!**/models/.gitkeep
+# Logs and transient outputs
 *.log
 *.tmp
+*.bak
+*.swp
+outputs/
+results/
+checkpoints/
+temp_data/
+cache/
 
-# Large generated result files; keep curated small examples intentionally.
+# Large experiment artifacts; use Zenodo instead
+models/
 *.pt
 *.pth
 *.ckpt
-*.xlsx
-*.xls
+*.pkl
+*.pickle
+*.npy
+*.npz
 
-# OS metadata
-.DS_Store
-Thumbs.db
+# Experiment-local generated artifacts
+experiments/**/models/
+experiments/**/outputs/
+experiments/**/results/
+experiments/**/cache/
+
+# Keep the small bundled Streamlit demo assets.
+!webapp/examples/transport_demo/network/
+!webapp/examples/transport_demo/network/*.npz
+!webapp/examples/transport_demo/models/
+!webapp/examples/transport_demo/models/**/
+!webapp/examples/transport_demo/models/**/*.pt
+
+# Manuscript/export artifacts
+Nature_Communications__format_*.pdf

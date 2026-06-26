@@ -5,9 +5,8 @@ TCR-GIN/experiments/baseline_comparison/plot3.py
 
 Generate Fig. 3 (baseline comparison), including panels:
   a-e: MAE vs Time on five datasets
-  f  : log-log scalability analysis
-  g  : exact-solution analysis with inset zoom
-  h  : true-MAE vs observed-MAE comparison
+  f  : exact-solution analysis with inset zoom
+  g  : true-MAE vs observed-MAE comparison
 
 Usage
 -----
@@ -17,7 +16,6 @@ Optional arguments
 ------------------
 python experiments/baseline_comparison/plot3.py \
     --exact_results_dir experiments/baseline_comparison/exact_comparison/results \
-    --scaling_csv experiments/baseline_comparison/results/raw_edge_time_details.csv \
     --output_dir experiments/baseline_comparison/results \
     --output_name fig3 \
     --formats pdf svg png
@@ -118,7 +116,7 @@ COL_MAP = {
 
 
 # =============================================================================
-# Section 1. Static Data (Panels a-f)
+# Section 1. Static Data (Panels a-e)
 # =============================================================================
 
 data_mae = {
@@ -129,23 +127,15 @@ data_mae = {
     'REDDIT': {'TCR-GIN': 0.008, 'DC': 0.064, 'DCR': 0.029, 'BC': 0.129, 'BCR': 0.002, 'DomiRank': 0.051, 'FINDER': 0.005, 'GDM': 0.004, 'GDMR': 0.001, 'CoreGDM': 0.001, 'MS': 0.139, 'MSR': 0.023, 'GND': 0.170, 'GNDR': 0.021, 'CI_l1': 0.104, 'CI_l2': 0.167, 'CI_l3': 0.170, 'CoreHD': 0.001, 'EGND': 0.023, 'EI_s1': 0.104, 'EI_s2': 0.1097, 'NES': 28.9222, 'NESR': 29.0085, 'NEM': 34.0616, 'NEMR': 34.174, 'NEL': 46.9117, 'NELR': 47.0033, 'VE': 8.5124, 'VER': 14.0638}
 }
 
-data_std = {'Small': 0.0002, 'Medium': 0.0005, 'Large': 0.0007, 'Huge': 0.0010, 'REDDIT': 0.0009}
-
-# data_time = {
-#     'Small': {'TCR-GIN': 0.0138, 'DC': 0.0025, 'DCR': 0.0075, 'BC': 0.004, 'BCR': 0.0375, 'DomiRank': 3.6935, 'FINDER': 0.3293, 'GDM': 8.7691, 'GDMR': 25.0076, 'CoreGDM': 39.4381, 'MS': 3.9571, 'MSR': 3.9247, 'GND': 0.1142, 'GNDR': 0.2229, 'CI_l1': 0.4076, 'CI_l2': 0.4056, 'CI_l3': 0.4205, 'CoreHD': 0.3321, 'EGND': 6.3557, 'EI_s1': 0.0725, 'EI_s2': 0.0692, 'NES': 0.7637, 'NESR': 0.868, 'NEM': 0.6389, 'NEMR': 0.7328, 'NEL': 0.94, 'NELR': 1.0847, 'VE': 1.1863, 'VER': 6.7097},
-#     'Medium': {'TCR-GIN': 0.038, 'DC': 0.0162, 'DCR': 0.0359, 'BC': 0.0126, 'BCR': 0.3688, 'DomiRank': 4.781, 'FINDER': 0.741, 'GDM': 10.4196, 'GDMR': 27.4409, 'CoreGDM': 60.9614, 'MS': 14.8829, 'MSR': 17.5193, 'GND': 0.1944, 'GNDR': 0.3417, 'CI_l1': 0.4528, 'CI_l2': 0.4585, 'CI_l3': 0.5502, 'CoreHD': 0.3151, 'EGND': 37.0215, 'EI_s1': 0.1139, 'EI_s2': 0.1175, 'NES': 31.8652, 'NESR': 31.9972, 'NEM': 30.578, 'NEMR': 30.7031, 'NEL': 35.9983, 'NELR': 36.1698, 'VE': 8.9721, 'VER': 14.6033},
-#     'Large': {'TCR-GIN': 0.1834, 'DC': 0.0363, 'DCR': 0.0952, 'BC': 0.0343, 'BCR': 2.1526, 'DomiRank': 12.3386, 'FINDER': 1.8379, 'GDM': 11.7499, 'GDMR': 29.4216, 'CoreGDM': 93.499, 'MS': 27.6019, 'MSR': 29.4194, 'GND': 0.316, 'GNDR': 0.4771, 'CI_l1': 0.6148, 'CI_l2': 0.734, 'CI_l3': 1.7241, 'CoreHD': 0.4414, 'EGND': 116.7601, 'EI_s1': 0.2294, 'EI_s2': 0.2641, 'NES': 100.3697, 'NESR': 100.5408, 'NEM': 109.6003, 'NEMR': 109.7611, 'NEL': 104.8616, 'NELR': 105.0416, 'VE': 26.2423, 'VER': 31.7096},
-#     'Huge': {'TCR-GIN': 0.1846, 'DC': 0.1041, 'DCR': 0.2181, 'BC': 0.1159, 'BCR': 8.6334, 'DomiRank': 28.0377, 'FINDER': 2.7935, 'GDM': 17.0931, 'GDMR': 39.207, 'CoreGDM': 173.3779, 'MS': 51.1259, 'MSR': 49.3389, 'GND': 0.6675, 'GNDR': 0.9641, 'CI_l1': 0.9142, 'CI_l2': 1.2391, 'CI_l3': 4.0508, 'CoreHD': 0.5617, 'EGND': 355.1737, 'EI_s1': 0.516, 'EI_s2': 0.6715, 'NES': 344.7038, 'NESR': 344.9741, 'NEM': 345.4145, 'NEMR': 345.6787, 'NEL': 362.9958, 'NELR': 363.2831, 'VE': 68.5747, 'VER': 73.6181},
-#     'REDDIT': {'TCR-GIN': 0.0271, 'DC': 0.0081, 'DCR': 0.0077, 'BC': 0.0076, 'BCR': 0.035, 'DomiRank': 3.276, 'FINDER': 0.2177, 'GDM': 13.9095, 'GDMR': 29.9178, 'CoreGDM': 28.8536, 'MS': 14.1443, 'MSR': 14.4445, 'GND': 0.4559, 'GNDR': 0.5748, 'CI_l1': 0.5639, 'CI_l2': 0.5423, 'CI_l3': 0.5494, 'CoreHD': 0.4287, 'EGND': 8.1625, 'EI_s1': 0.1025, 'EI_s2': 0.1097, 'NES': 28.9222, 'NESR': 29.0085, 'NEM': 34.0616, 'NEMR': 34.174, 'NEL': 46.9117, 'NELR': 47.0033, 'VE': 8.5124, 'VER': 14.0638}
-# }
+data_std = {'Small': 0.0001, 'Medium': 0.0005, 'Large': 0.0007, 'Huge': 0.0009, 'REDDIT': 0.0008}
 
 data_time = {
-    'Small': {'TCR-GIN': 0.0138, 'DC': 0.0018, 'DCR': 0.0047, 'BC': 0.0022, 'BCR': 0.0237, 'DomiRank': 2.1872, 'FINDER': 0.2725, 'GDM': 5.0745, 'GDMR': 20.4437, 'CoreGDM': 36.2579, 'MS': 2.3876, 'MSR': 2.4932, 'GND': 0.1097, 'GNDR': 0.1041, 'CI_l1': 0.419, 'CI_l2': 0.4189, 'CI_l3': 0.4322, 'CoreHD': 0.3362, 'EGND': 5.3954, 'EI_s1': 0.1067, 'EI_s2': 0.1043, 'NES': 0.7237, 'NESR': 0.0892, 'NEM': 0.7054, 'NEMR': 0.0963, 'NEL': 0.7276, 'NELR': 0.0914, 'VE': 0.7562, 'VER': 4.1086},
-    'Medium': {'TCR-GIN': 0.038, 'DC': 0.0075, 'DCR': 0.0235, 'BC': 0.011, 'BCR': 0.2955, 'DomiRank': 3.8319, 'FINDER': 0.7638, 'GDM': 5.436, 'GDMR': 22.391, 'CoreGDM': 50.9918, 'MS': 9.3396, 'MSR': 9.4666, 'GND': 0.1665, 'GNDR': 0.1249, 'CI_l1': 0.4794, 'CI_l2': 0.4913, 'CI_l3': 0.5726, 'CoreHD': 0.3624, 'EGND': 38.8013, 'EI_s1': 0.1489, 'EI_s2': 0.1502, 'NES': 14.8874, 'NESR': 0.1321, 'NEM': 15.1317, 'NEMR': 0.1402, 'NEL': 15.9606, 'NELR': 0.1353, 'VE': 6.7132, 'VER': 4.1354},
-    'Large': { 'TCR-GIN': 0.1834, 'DC': 0.0237, 'DCR': 0.0654, 'BC': 0.0363, 'BCR': 1.574, 'DomiRank': 6.9533, 'FINDER': 1.788, 'GDM': 6.3918, 'GDMR': 25.7004, 'CoreGDM': 77.4105, 'MS': 17.0699, 'MSR': 17.2048, 'GND': 0.2631, 'GNDR': 0.1656, 'CI_l1': 0.5925, 'CI_l2': 0.6609, 'CI_l3': 1.3519, 'CoreHD': 0.4159, 'EGND': 129.2289, 'EI_s1': 0.2399, 'EI_s2': 0.272, 'NES': 58.7194, 'NESR': 0.1639, 'NEM': 58.1428, 'NEMR': 0.1776, 'NEL': 57.4584, 'NELR': 0.1613, 'VE': 19.4635, 'VER': 4.1646},
-    'Huge': {'TCR-GIN': 0.1846, 'DC': 0.0598, 'DCR': 0.1536, 'BC': 0.09, 'BCR': 9.2372, 'DomiRank': 14.7349, 'FINDER': 2.8037, 'GDM': 8.635, 'GDMR': 31.0541, 'CoreGDM': 118.4571, 'MS': 29.7292, 'MSR': 29.8856, 'GND': 0.5057, 'GNDR': 0.2489, 'CI_l1': 0.7105, 'CI_l2': 0.8237, 'CI_l3': 1.5341, 'CoreHD': 0.4741, 'EGND': 337.0414, 'EI_s1': 0.4159, 'EI_s2': 0.4939, 'NES': 237.7763, 'NESR': 0.1935, 'NEM': 241.7978, 'NEMR': 0.2071, 'NEL': 242.5119, 'NELR': 0.2571, 'VE': 53.5046, 'VER': 4.3348
+    'Small': {'TCR-GIN': 0.0165, 'DC': 0.0018, 'DCR': 0.0047, 'BC': 0.0022, 'BCR': 0.0237, 'DomiRank': 2.1872, 'FINDER': 0.2725, 'GDM': 5.0745, 'GDMR': 20.4437, 'CoreGDM': 36.2579, 'MS': 2.3876, 'MSR': 2.4932, 'GND': 0.1097, 'GNDR': 0.1041, 'CI_l1': 0.419, 'CI_l2': 0.4189, 'CI_l3': 0.4322, 'CoreHD': 0.3362, 'EGND': 5.3954, 'EI_s1': 0.1067, 'EI_s2': 0.1043, 'NES': 0.7237, 'NESR': 0.0892, 'NEM': 0.7054, 'NEMR': 0.0963, 'NEL': 0.7276, 'NELR': 0.0914, 'VE': 0.7562, 'VER': 4.1086},
+    'Medium': {'TCR-GIN': 0.0434, 'DC': 0.0075, 'DCR': 0.0235, 'BC': 0.011, 'BCR': 0.2955, 'DomiRank': 3.8319, 'FINDER': 0.7638, 'GDM': 5.436, 'GDMR': 22.391, 'CoreGDM': 50.9918, 'MS': 9.3396, 'MSR': 9.4666, 'GND': 0.1665, 'GNDR': 0.1249, 'CI_l1': 0.4794, 'CI_l2': 0.4913, 'CI_l3': 0.5726, 'CoreHD': 0.3624, 'EGND': 38.8013, 'EI_s1': 0.1489, 'EI_s2': 0.1502, 'NES': 14.8874, 'NESR': 0.1321, 'NEM': 15.1317, 'NEMR': 0.1402, 'NEL': 15.9606, 'NELR': 0.1353, 'VE': 6.7132, 'VER': 4.1354},
+    'Large': { 'TCR-GIN': 0.1814, 'DC': 0.0237, 'DCR': 0.0654, 'BC': 0.0363, 'BCR': 1.574, 'DomiRank': 6.9533, 'FINDER': 1.788, 'GDM': 6.3918, 'GDMR': 25.7004, 'CoreGDM': 77.4105, 'MS': 17.0699, 'MSR': 17.2048, 'GND': 0.2631, 'GNDR': 0.1656, 'CI_l1': 0.5925, 'CI_l2': 0.6609, 'CI_l3': 1.3519, 'CoreHD': 0.4159, 'EGND': 129.2289, 'EI_s1': 0.2399, 'EI_s2': 0.272, 'NES': 58.7194, 'NESR': 0.1639, 'NEM': 58.1428, 'NEMR': 0.1776, 'NEL': 57.4584, 'NELR': 0.1613, 'VE': 19.4635, 'VER': 4.1646},
+    'Huge': {'TCR-GIN': 0.1890, 'DC': 0.0598, 'DCR': 0.1536, 'BC': 0.09, 'BCR': 9.2372, 'DomiRank': 14.7349, 'FINDER': 2.8037, 'GDM': 8.635, 'GDMR': 31.0541, 'CoreGDM': 118.4571, 'MS': 29.7292, 'MSR': 29.8856, 'GND': 0.5057, 'GNDR': 0.2489, 'CI_l1': 0.7105, 'CI_l2': 0.8237, 'CI_l3': 1.5341, 'CoreHD': 0.4741, 'EGND': 337.0414, 'EI_s1': 0.4159, 'EI_s2': 0.4939, 'NES': 237.7763, 'NESR': 0.1935, 'NEM': 241.7978, 'NEMR': 0.2071, 'NEL': 242.5119, 'NELR': 0.2571, 'VE': 53.5046, 'VER': 4.3348
     },
-    'REDDIT': {'TCR-GIN': 0.0271, 'DC': 0.0022, 'DCR': 0.0056, 'BC': 0.0073, 'BCR': 0.026, 'DomiRank': 3.1331, 'FINDER': 0.2228, 'GDM': 5.219, 'GDMR': 20.5209, 'CoreGDM': 39.2343, 'MS': 7.8986, 'MSR': 7.9442, 'GND': 0.1616, 'GNDR': 0.2768, 'CI_l1': 0.3758, 'CI_l2': 0.3744, 'CI_l3': 0.3843, 'CoreHD': 0.2968, 'EGND': 10.0787, 'EI_s1': 0.0815, 'EI_s2': 0.0856, 'NES': 11.2076, 'NESR': 11.3304, 'NEM': 11.4341, 'NEMR': 11.5634, 'NEL': 11.2453, 'NELR': 11.3772, 'VE': 6.4368, 'VER': 10.6235}
+    'REDDIT': {'TCR-GIN': 0.0274, 'DC': 0.0022, 'DCR': 0.0056, 'BC': 0.0073, 'BCR': 0.026, 'DomiRank': 3.1331, 'FINDER': 0.2228, 'GDM': 5.219, 'GDMR': 20.5209, 'CoreGDM': 39.2343, 'MS': 7.8986, 'MSR': 7.9442, 'GND': 0.1616, 'GNDR': 0.2768, 'CI_l1': 0.3758, 'CI_l2': 0.3744, 'CI_l3': 0.3843, 'CoreHD': 0.2968, 'EGND': 10.0787, 'EI_s1': 0.0815, 'EI_s2': 0.0856, 'NES': 11.2076, 'NESR': 11.3304, 'NEM': 11.4341, 'NEMR': 11.5634, 'NEL': 11.2453, 'NELR': 11.3772, 'VE': 6.4368, 'VER': 10.6235}
 }
 
 df_mae = pd.DataFrame(data_mae).T
@@ -159,7 +149,6 @@ df_time = pd.DataFrame(data_time).T
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Plot baseline comparison figure (Fig. 3).")
     parser.add_argument("--exact_results_dir", type=str, default=None, help="Directory for exact/observed CSV files.")
-    parser.add_argument("--scaling_csv", type=str, default=None, help="CSV file for panel f (num_edges, time_total).")
     parser.add_argument("--output_dir", type=str, default=None, help="Output directory.")
     parser.add_argument("--output_name", type=str, default="fig3", help="Output base filename.")
     parser.add_argument("--formats", nargs="+", default=["pdf"], help="Save formats, e.g. pdf svg png.")
@@ -187,23 +176,6 @@ def resolve_output_dir(user_dir: str | None) -> Path:
         p = Path(user_dir).expanduser()
         return p if p.is_absolute() else PROJECT_ROOT / p
     return SCRIPT_DIR / "results"
-
-
-def resolve_scaling_csv(user_csv: str | None, output_dir: Path) -> Path:
-    if user_csv:
-        p = Path(user_csv).expanduser()
-        return p if p.is_absolute() else PROJECT_ROOT / p
-
-    candidates = [
-        output_dir / "raw_edge_time_details.csv",
-        output_dir / "raw_edge_time_details-only-inf.csv",
-        PROJECT_ROOT / "experiments" / "baseline_comparison" / "results" / "raw_edge_time_details.csv",
-        PROJECT_ROOT / "experiments" / "3_baseline_comparison" / "results" / "raw_edge_time_details.csv",
-    ]
-    for p in candidates:
-        if p.exists():
-            return p
-    return candidates[0]
 
 
 def build_style_map() -> Dict[str, Dict[str, Any]]:
@@ -240,7 +212,7 @@ def build_style_map() -> Dict[str, Dict[str, Any]]:
 
 
 # =============================================================================
-# Section 3. Data Loading for Panels g/h and f
+# Section 3. Data Loading for Panels f/g
 # =============================================================================
 
 def parse_mae_value(v: Any) -> float:
@@ -252,7 +224,7 @@ def parse_mae_value(v: Any) -> float:
 
 def load_exact_observed_data(base_path: Path) -> Tuple[pd.DataFrame, pd.DataFrame, Dict[str, str]]:
     """
-    Load data for panels (g) and (h).
+    Load data for panels (f) and (g).
     Falls back to dummy data if files are missing.
     """
     try:
@@ -276,7 +248,7 @@ def load_exact_observed_data(base_path: Path) -> Tuple[pd.DataFrame, pd.DataFram
         df_merged = pd.merge(df_exact_detail, df_observ_detail_clean, on="network")
         df_merged = df_merged.sort_values("Label").reset_index(drop=True)
 
-        # Build data for panel (h)
+        # Build data for panel (g)
         mae_data: List[Dict[str, Any]] = []
 
         tcr_mae_true = parse_mae_value(df_exact_summary["MAE"].iloc[0])
@@ -317,31 +289,6 @@ def load_exact_observed_data(base_path: Path) -> Tuple[pd.DataFrame, pd.DataFram
             "Observed_MAE": [0.02, 0.25],
         })
         return df_merged, df_mae_plot, {}
-
-
-def load_scaling_data(scaling_csv: Path) -> pd.DataFrame:
-    """
-    Load panel-f data from CSV.
-    Expected columns: num_edges, time_total
-    """
-    if scaling_csv.exists():
-        # try common separators
-        for sep in ["\t", ",", None]:
-            try:
-                if sep is None:
-                    df = pd.read_csv(scaling_csv, sep=None, engine="python")
-                else:
-                    df = pd.read_csv(scaling_csv, sep=sep)
-
-                if "num_edges" in df.columns and "time_total" in df.columns:
-                    return df
-            except Exception:
-                continue
-
-    print(f"[WARN] Scaling CSV not found/invalid: {scaling_csv}. Using dummy data.")
-    dummy = pd.DataFrame({"num_edges": np.logspace(1, 4.5, 500)})
-    dummy["time_total"] = [max(0.005, 1e-4 * x ** 0.54 + np.random.normal(0, 0.001)) for x in dummy["num_edges"]]
-    return dummy
 
 
 # =============================================================================
@@ -418,76 +365,8 @@ def plot_panels_a_to_e(fig: plt.Figure, gs_row1, gs_row2, style_map: Dict[str, D
         ax.set_ylim(-0.01, 0.21)
 
 
-def plot_panel_f(ax_f: plt.Axes, df_f: pd.DataFrame) -> None:
+def plot_panel_f(ax_f: plt.Axes, df_merged: pd.DataFrame, col_map: Dict[str, str]) -> None:
     ax_f.set_title("f", loc="left", pad=8, fontsize=10, fontweight="bold")
-
-    df_f = df_f[(df_f["num_edges"] > 0) & (df_f["time_total"] > 0)].copy()
-    if df_f.empty:
-        ax_f.text(0.5, 0.5, "No data", ha="center", va="center", transform=ax_f.transAxes)
-        return
-
-    # Logarithmic binning
-    num_bins = 20
-    min_edges = float(df_f["num_edges"].min())
-    max_edges = float(df_f["num_edges"].max())
-
-    if min_edges <= 0 or max_edges <= 0 or np.isclose(min_edges, max_edges):
-        binned_data = df_f[["num_edges", "time_total"]].dropna().copy()
-    else:
-        bins = np.logspace(np.log10(min_edges), np.log10(max_edges), num=num_bins + 1)
-        df_f["bin"] = pd.cut(df_f["num_edges"], bins=bins, include_lowest=True)
-        binned_data = df_f.groupby("bin", observed=True)[["num_edges", "time_total"]].mean().dropna()
-
-    log_edges = np.log10(binned_data["num_edges"])
-    log_time = np.log10(binned_data["time_total"])
-
-    # Fit only on larger graphs
-    threshold = 100
-    fit_mask = binned_data["num_edges"] >= threshold
-
-    log_edges_fit = log_edges[fit_mask]
-    log_time_fit = log_time[fit_mask]
-    if len(log_edges_fit) < 2:
-        log_edges_fit = log_edges
-        log_time_fit = log_time
-        fit_mask = np.ones(len(log_edges), dtype=bool)
-
-    k, b = np.polyfit(log_edges_fit, log_time_fit, 1)
-    fit_line_full = k * log_edges + b
-
-    # scatter
-    if (~fit_mask).sum() > 0:
-        ax_f.scatter(
-            log_edges[~fit_mask], log_time[~fit_mask],
-            color="#7f7f7f", s=15, edgecolors="black", linewidths=0.5, alpha=0.5,
-            label=r"$|E| < 100$", zorder=4
-        )
-
-    ax_f.scatter(
-        log_edges[fit_mask], log_time[fit_mask],
-        color="#FF0000", s=25, edgecolors="black", linewidths=0.5,
-        label=r"$|E| \geq 100$", zorder=5
-    )
-    ax_f.plot(log_edges, fit_line_full, color="black", linestyle="--", linewidth=1.2)
-
-    ax_f.set_xlabel(r"$\log_{10}(|E|)$", fontsize=10)
-    ax_f.set_ylabel(r"$\log_{10}(\mathrm{Time\,/\,s})$", fontsize=10)
-
-    leg_f = ax_f.legend(
-        fontsize=8, loc="upper left", frameon=True, framealpha=0.7,
-        edgecolor="lightgray", borderpad=0.3, handletextpad=0.3
-    )
-    leg_f.get_frame().set_linewidth(0.4)
-
-    ax_f.text(
-        0.95, 0.1, rf"Slope $k = {k:.2f}$",
-        transform=ax_f.transAxes, fontsize=10, color="black",
-        ha="right", va="top"
-    )
-
-
-def plot_panel_g(ax_g: plt.Axes, df_merged: pd.DataFrame, col_map: Dict[str, str]) -> None:
-    ax_g.set_title("g", loc="left", pad=8, fontsize=10, fontweight="bold")
 
     x_idx = np.arange(len(df_merged))
     y_true = df_merged["Label"]
@@ -499,30 +378,30 @@ def plot_panel_g(ax_g: plt.Axes, df_merged: pd.DataFrame, col_map: Dict[str, str
     for col_detail in col_map.keys():
         if col_detail in df_merged.columns:
             lbl = "Baselines" if not plotted_base else None
-            ax_g.plot(x_idx, df_merged[col_detail], color="gray", alpha=0.3, lw=0.4, label=lbl)
+            ax_f.plot(x_idx, df_merged[col_detail], color="gray", alpha=0.3, lw=0.4, label=lbl)
             plotted_base = True
 
-    ax_g.plot(x_idx, y_true, color="black", lw=0.8, label="True Labels", zorder=100)
-    ax_g.plot(x_idx, y_obs, color="#1f77b4", ls="--", lw=0.8, label="Observed Labels", zorder=101)
-    ax_g.plot(x_idx, y_tcr, color="#FF0000", ls="-", lw=0.8, alpha=0.8, label="TCR-GIN", zorder=102)
-    ax_g.fill_between(x_idx, y_tcr - y_tcr_std, y_tcr + y_tcr_std, color="#FF0000", alpha=0.2, zorder=101, linewidth=0)
+    ax_f.plot(x_idx, y_true, color="black", lw=0.8, label="True Labels", zorder=100)
+    ax_f.plot(x_idx, y_obs, color="#1f77b4", ls="--", lw=0.8, label="Observed Labels", zorder=101)
+    ax_f.plot(x_idx, y_tcr, color="#FF0000", ls="-", lw=0.8, alpha=0.8, label="TCR-GIN", zorder=102)
+    ax_f.fill_between(x_idx, y_tcr - y_tcr_std, y_tcr + y_tcr_std, color="#FF0000", alpha=0.2, zorder=101, linewidth=0)
 
-    ax_g.set_xlabel("Test Sample ID", fontsize=10)
-    ax_g.set_ylabel("CD Value", fontsize=10)
-    ax_g.set_xlim(0, 400)
-    ax_g.set_ylim(0, 1.0)
+    ax_f.set_xlabel("Test Sample ID", fontsize=10)
+    ax_f.set_ylabel("CD Value", fontsize=10)
+    ax_f.set_xlim(0, 400)
+    ax_f.set_ylim(0, 1.0)
 
-    leg_g = ax_g.legend(fontsize=10, loc="upper left", frameon=True, framealpha=0.7, edgecolor="lightgray", borderpad=0.3)
-    leg_g.get_frame().set_linewidth(0.4)
+    leg_f = ax_f.legend(fontsize=10, loc="upper left", frameon=True, framealpha=0.7, edgecolor="lightgray", borderpad=0.3)
+    leg_f.get_frame().set_linewidth(0.4)
 
-    for line in leg_g.get_lines():
+    for line in leg_f.get_lines():
         if line.get_label() == "Baselines":
             line.set_alpha(0.9)
             line.set_linewidth(1.5)
             line.set_color("#666666")
 
     # Inset
-    axins = ax_g.inset_axes([0.55, 0.08, 0.41, 0.28])
+    axins = ax_f.inset_axes([0.55, 0.08, 0.41, 0.28])
     n_points = len(df_merged)
     start_zoom, end_zoom = int(n_points * 0.7), int(n_points * 0.8)
     if end_zoom - start_zoom < 5:
@@ -552,25 +431,25 @@ def plot_panel_g(ax_g: plt.Axes, df_merged: pd.DataFrame, col_map: Dict[str, str
             end_zoom - start_zoom,
             (y_max_zoom + margin) - (y_min_zoom - margin),
         ),
-        ax_g.transData
+        ax_f.transData
     )
-    ax_g.add_patch(BboxPatch(bbox_roi, fill=False, ec="0.5", lw=0.5, zorder=200))
-    ax_g.add_patch(BboxConnector(axins.bbox, bbox_roi, loc1=2, loc2=3, fc="none", ec="0.5", lw=0.5, zorder=200))
-    ax_g.add_patch(BboxConnector(axins.bbox, bbox_roi, loc1=1, loc2=4, fc="none", ec="0.5", lw=0.5, zorder=200))
+    ax_f.add_patch(BboxPatch(bbox_roi, fill=False, ec="0.5", lw=0.5, zorder=200))
+    ax_f.add_patch(BboxConnector(axins.bbox, bbox_roi, loc1=2, loc2=3, fc="none", ec="0.5", lw=0.5, zorder=200))
+    ax_f.add_patch(BboxConnector(axins.bbox, bbox_roi, loc1=1, loc2=4, fc="none", ec="0.5", lw=0.5, zorder=200))
 
 
-def plot_panel_h(ax_h: plt.Axes, df_mae_plot: pd.DataFrame, style_map: Dict[str, Dict[str, Any]]) -> None:
-    ax_h.set_title("h", loc="left", pad=8, fontsize=10, fontweight="bold")
+def plot_panel_g(ax_g: plt.Axes, df_mae_plot: pd.DataFrame, style_map: Dict[str, Dict[str, Any]]) -> None:
+    ax_g.set_title("g", loc="left", pad=8, fontsize=10, fontweight="bold")
 
     raw_max = max(df_mae_plot["True_MAE"].max(), df_mae_plot["Observed_MAE"].max())
     max_val = np.ceil(raw_max / 0.05) * 0.05
-    ax_h.plot([0, max_val], [0, max_val], color="black", ls="--", lw=1.0)
+    ax_g.plot([0, max_val], [0, max_val], color="black", ls="--", lw=1.0)
 
     for _, row in df_mae_plot.iterrows():
         algo = row["Algorithm"]
         style = style_map.get(algo, {"color": "#B0B0B0", "marker": "o"})
         if algo == "TCR-GIN":
-            ax_h.scatter(
+            ax_g.scatter(
                 row["True_MAE"], row["Observed_MAE"], color=style["color"], marker="*",
                 s=80, zorder=200, edgecolors="black", linewidth=0.5
             )
@@ -578,20 +457,20 @@ def plot_panel_h(ax_h: plt.Axes, df_mae_plot: pd.DataFrame, style_map: Dict[str,
             ms = 5 if style["marker"] == "s" else 6
             z_ord = 100 if algo in KEEP_ALGOS else 10
             alpha_val = 0.85 if algo in KEEP_ALGOS else 0.5
-            ax_h.scatter(
+            ax_g.scatter(
                 row["True_MAE"], row["Observed_MAE"], color=style["color"], marker=style["marker"],
                 alpha=alpha_val, s=ms ** 2 * 1.2, edgecolors="white", linewidth=0.3, zorder=z_ord
             )
 
-    ax_h.set_xlabel("Pred. vs true label", fontsize=10)
-    ax_h.set_ylabel("Observed MAE", fontsize=10)
-    ax_h.set_xlim(0, 0.1)
-    ax_h.set_ylim(0, 0.1)
-    ax_h.set_aspect("equal")
+    ax_g.set_xlabel("Pred. vs true label", fontsize=10)
+    ax_g.set_ylabel("Pred. vs observed label", fontsize=10)
+    ax_g.set_xlim(0, 0.1)
+    ax_g.set_ylim(0, 0.1)
+    ax_g.set_aspect("equal")
 
     locator = MultipleLocator(0.05)
-    ax_h.xaxis.set_major_locator(locator)
-    ax_h.yaxis.set_major_locator(locator)
+    ax_g.xaxis.set_major_locator(locator)
+    ax_g.yaxis.set_major_locator(locator)
 
 
 def plot_legend(ax_leg: plt.Axes, style_map: Dict[str, Dict[str, Any]]) -> None:
@@ -628,7 +507,7 @@ def plot_legend(ax_leg: plt.Axes, style_map: Dict[str, Dict[str, Any]]) -> None:
 # Section 5. Main Figure Assembly / Save
 # =============================================================================
 
-def create_figure(df_merged: pd.DataFrame, df_mae_plot: pd.DataFrame, col_map: Dict[str, str], scaling_df: pd.DataFrame) -> plt.Figure:
+def create_figure(df_merged: pd.DataFrame, df_mae_plot: pd.DataFrame, col_map: Dict[str, str]) -> plt.Figure:
     style_map = build_style_map()
 
     fig = plt.figure(figsize=(8.27, 10.5))
@@ -641,21 +520,17 @@ def create_figure(df_merged: pd.DataFrame, df_mae_plot: pd.DataFrame, col_map: D
     # a-e
     plot_panels_a_to_e(fig, gs_row1, gs_row2, style_map)
 
+    # legend (moved to row 2, column 3)
+    ax_leg = fig.add_subplot(gs_row2[2])
+    plot_legend(ax_leg, style_map)
+
     # f
-    ax_f = fig.add_subplot(gs_row2[2])
-    plot_panel_f(ax_f, scaling_df)
+    ax_f = fig.add_subplot(gs_row3[0])
+    plot_panel_f(ax_f, df_merged, col_map)
 
     # g
-    ax_g = fig.add_subplot(gs_row3[0])
-    plot_panel_g(ax_g, df_merged, col_map)
-
-    # h
-    ax_h = fig.add_subplot(gs_row3[1])
-    plot_panel_h(ax_h, df_mae_plot, style_map)
-
-    # legend
-    ax_leg = fig.add_subplot(gs_row3[2])
-    plot_legend(ax_leg, style_map)
+    ax_g = fig.add_subplot(gs_row3[1])
+    plot_panel_g(ax_g, df_mae_plot, style_map)
 
     return fig
 
@@ -687,12 +562,10 @@ def main() -> None:
 
     exact_results_dir = resolve_exact_results_dir(args.exact_results_dir)
     output_dir = resolve_output_dir(args.output_dir)
-    scaling_csv = resolve_scaling_csv(args.scaling_csv, output_dir)
 
     df_merged, df_mae_plot, col_map = load_exact_observed_data(exact_results_dir)
-    scaling_df = load_scaling_data(scaling_csv)
 
-    fig = create_figure(df_merged, df_mae_plot, col_map, scaling_df)
+    fig = create_figure(df_merged, df_mae_plot, col_map)
     save_figure(fig, output_dir, args.output_name, args.formats)
     plt.close(fig)
 

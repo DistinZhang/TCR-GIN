@@ -118,7 +118,7 @@ This tool is a key step in the overall research pipeline:
 
 | Entity | Convention | Example |
 |---|---|---|
-| **Directory** | Dataset name | `BA-100`, `London` |
+| **Directory** | Dataset name | `BA-100`, `Transport` |
 | **Original network** | Network name | `BA-100_1`, `REDDIT_1` |
 | **Algorithm identifier** | Network–Algorithm | `BA-100_1-DF`, `REDDIT_1-GDMR`, `BA-100_1-R1` |
 | **Remnant subgraph** | `NETWORK-ALGO_STEP_edges.npz` — disjoint union of all qualifying connected components after removing `STEP` nodes | `REDDIT_1-GDMR_2_edges.npz` |

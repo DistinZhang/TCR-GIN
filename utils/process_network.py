@@ -64,7 +64,7 @@ Example:
 
 Another example:
     python utils/process_network.py \
-        --dir experiments/trajectory_analysis/data/london \
+        --dir experiments/trajectory_analysis/data/transport \
         --algos CI1 CI2 CI3 GDM GDMR CoreGDM CoreHD EGND FINDER DomiRank \
                 DC DCR BC BCR NES NESR NEM NEMR NEL NELR VE VER \
         --random-runs 2 \

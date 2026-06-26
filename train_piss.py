@@ -422,7 +422,7 @@ def main():
             f"Loss: {test_loss:.4f}, "
             f"RMSE: {test_metrics['rmse']:.4f}, "
             f"MAE: {test_metrics['mae']:.4f}, "
-            f"R²: {test_metrics['r2']:.4f}"
+            f"R2: {test_metrics['r2']:.4f}"
         )
 
         results = {

@@ -83,7 +83,8 @@ def parse_args():
     parser.add_argument(
         '--activation_fn',
         type=str,
-        help='[Ablation] Activation function: relu or gelu.'
+        default='gelu',
+        help='[Ablation] Activation function: relu, gelu, or sigmoid.'
     )
 
     # --- Training parameters ---
@@ -121,7 +122,7 @@ def parse_args():
     parser.add_argument(
         '--label_scale_factor',
         type=float,
-        default=100.0,
+        default=1.0,
         help='Scaling factor applied to labels to avoid numerical underflow or to better match the loss scale.'
     )
 

@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: "TCR-GIN: Topology-Consistency Regularized Graph Isomorphism Network"
+message: "If you use this software, please cite the associated manuscript and Zenodo record."
+type: software
+authors:
+  - family-names: Zhang
+    given-names: Jie
+  - family-names: Wang
+    given-names: Tao
+  - family-names: Ji
+    given-names: Yatai
+  - family-names: He
+    given-names: Hua
+  - family-names: Zhu
+    given-names: Zhengqiu
+  - family-names: Zhang
+    given-names: Boquan
+  - family-names: Fan
+    given-names: Changjun
+  - family-names: Chen
+    given-names: Bin
+  - family-names: De Domenico
+    given-names: Manlio
+  - family-names: Lu
+    given-names: Xin
+repository-code: "https://github.com/DistinZhang/TCR-GIN"
+doi: "10.5281/zenodo.20287619"
+license: MIT

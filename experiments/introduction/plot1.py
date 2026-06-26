@@ -148,6 +148,12 @@ C_NODE_DEAD  = "#bfbfbf"
 C_EDGE_ALIVE = "#888888"
 C_EDGE_DEAD  = "#e0e0e0"
 
+# Layout tuning for panel b. Communities are expanded away from the bridge
+# endpoints, then the whole layout is scaled back to the original width.
+NET2_COMMUNITY_SPREAD = 1.42
+NET2_LEFT_COMMUNITY_SPREAD = 1.85
+NET2_BRIDGE_LENGTH_FACTOR = 0.50
+
 
 # =============================================================================
 # Section 1.1 Panel-Specific Tau Switches
@@ -513,6 +519,82 @@ def plot_cd_subplot(ax, df, net_name, tau_low, tau_high,
 # =============================================================================
 # Section 4. Network Structure Rendering
 # =============================================================================
+
+def spread_community_layout(G, pos, spread=1.0, bridge_factor=1.0):
+    """Spread nodes inside detected communities without moving the whole layout."""
+    if spread <= 1.0 or G.number_of_nodes() == 0:
+        return pos
+
+    arr = np.array([pos[n] for n in G.nodes()], dtype=float)
+    orig_center = arr.mean(axis=0)
+    orig_span = np.ptp(arr, axis=0)
+    orig_span[orig_span == 0] = 1.0
+
+    new_pos = {n: np.array(p, dtype=float).copy() for n, p in pos.items()}
+    communities = list(nx.algorithms.community.greedy_modularity_communities(G))
+    if len(communities) < 2:
+        return pos
+
+    node_to_comm = {n: i for i, c in enumerate(communities) for n in c}
+    inter_edges = [(u, v) for u, v in G.edges() if node_to_comm[u] != node_to_comm[v]]
+
+    if len(communities) == 2 and inter_edges:
+        comm_centers = [
+            np.array([pos[n] for n in c], dtype=float).mean(axis=0)
+            for c in communities
+        ]
+        left_idx, right_idx = sorted(range(2), key=lambda i: comm_centers[i][0])
+
+        bridge = next(
+            (edge for edge in inter_edges
+             if {node_to_comm[edge[0]], node_to_comm[edge[1]]} == {left_idx, right_idx}),
+            inter_edges[0]
+        )
+        u, v = bridge
+        left_anchor = u if node_to_comm[u] == left_idx else v
+        right_anchor = v if left_anchor == u else u
+
+        left_anchor_pos = np.array(pos[left_anchor], dtype=float)
+        right_anchor_pos = np.array(pos[right_anchor], dtype=float)
+        bridge_vec = right_anchor_pos - left_anchor_pos
+        target_bridge_vec = bridge_vec * bridge_factor
+        bridge_mid = (left_anchor_pos + right_anchor_pos) / 2.0
+        target_left = bridge_mid - target_bridge_vec / 2.0
+        target_right = bridge_mid + target_bridge_vec / 2.0
+        left_spread = NET2_LEFT_COMMUNITY_SPREAD
+        right_spread = spread
+
+        for n in communities[left_idx]:
+            new_pos[n] = target_left + (np.array(pos[n], dtype=float) - left_anchor_pos) * left_spread
+        for n in communities[right_idx]:
+            new_pos[n] = target_right + (np.array(pos[n], dtype=float) - right_anchor_pos) * right_spread
+
+        for i, community in enumerate(communities):
+            if i in (left_idx, right_idx):
+                continue
+            nodes = list(community)
+            center = np.array([pos[n] for n in nodes], dtype=float).mean(axis=0)
+            for n in nodes:
+                new_pos[n] = center + (np.array(pos[n], dtype=float) - center) * spread
+    else:
+        for community in communities:
+            nodes = list(community)
+            center = np.array([pos[n] for n in nodes], dtype=float).mean(axis=0)
+            for n in nodes:
+                new_pos[n] = center + (np.array(pos[n], dtype=float) - center) * spread
+
+    # Preserve the original center and width so panel b keeps the same footprint.
+    new_arr = np.array([new_pos[n] for n in G.nodes()], dtype=float)
+    new_center = new_arr.mean(axis=0)
+    new_span = np.ptp(new_arr, axis=0)
+    new_span[new_span == 0] = 1.0
+    scale = orig_span[0] / new_span[0]
+
+    for n in new_pos:
+        new_pos[n] = (new_pos[n] - new_center) * scale + orig_center
+
+    return new_pos
+
 
 def draw_network_structure(ax, G, pos, title="", removed_nodes=None):
     """Draw one network snapshot with alive/removed nodes."""
@@ -1121,6 +1203,11 @@ def main():
     k2      = k_scale / np.sqrt(N2)
     pos1    = nx.spring_layout(G1, seed=args.seed, iterations=200, k=k1)
     pos2    = nx.spring_layout(G2, seed=args.seed, iterations=200, k=k2)
+    pos2    = spread_community_layout(
+        G2, pos2,
+        spread=NET2_COMMUNITY_SPREAD,
+        bridge_factor=NET2_BRIDGE_LENGTH_FACTOR
+    )
 
     # Render and save
     print("[INFO] Rendering main figure ...")

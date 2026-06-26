@@ -321,7 +321,7 @@ def run_ablation_exp(task_config):
 
                     t_inf_start = time.time()
                     with torch.no_grad():
-                        y_pred = model(data).item()
+                        y_pred = torch.clamp(model(data), 0.0, 1.0).item()
                     t_inf_end = time.time()
                     inf_time = t_inf_end - t_inf_start
 

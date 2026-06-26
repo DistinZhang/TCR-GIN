@@ -8,14 +8,19 @@
 *.txt text eol=lf
 *.csv text eol=lf
 *.json text eol=lf
+*.toml text eol=lf
 
 *.pdf binary
 *.png binary
 *.jpg binary
 *.jpeg binary
 *.gif binary
+*.svg text eol=lf
 *.npy binary
 *.npz binary
+*.pkl binary
+*.pickle binary
 *.pt binary
 *.pth binary
 *.ckpt binary
+*.mp4 binary

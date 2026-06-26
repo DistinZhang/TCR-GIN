@@ -394,9 +394,11 @@ def load_baselines(baselines_dir: str, scale: Union[str, int, List, None]) -> Tu
     """
     all_dfs: List[pd.DataFrame] = []
 
+    # ====== Modifiedsection START ======
+    # Find results_final directly under baselines_dir,no longer append scale subdirectory
     results_path = os.path.join(baselines_dir, "results_final")
 
-    # Fallback: if results_final is absent, read files directly under baselines_dir.
+    # Fallback: if no results_final subdirectory, find files directly under baselines_dir
     if not os.path.isdir(results_path):
         has_files = bool(
             glob.glob(os.path.join(baselines_dir, "*.csv"))
@@ -407,6 +409,8 @@ def load_baselines(baselines_dir: str, scale: Union[str, int, List, None]) -> Tu
         else:
             print(f"  [Warning] No results_final found under {baselines_dir}")
             return pd.DataFrame(), pd.DataFrame()
+    # ====== Modifiedsection END ======
+
     baseline_files = glob.glob(os.path.join(results_path, "*.xlsx")) + glob.glob(os.path.join(results_path, "*.csv"))
     if not baseline_files:
         print(f"  [Warning] No baseline files (*.xlsx/*.csv) found in {results_path}")
@@ -631,7 +635,7 @@ def run_single_experiment(
             graph_data.batch = torch.zeros(graph_data.num_nodes, dtype=torch.long, device=device)
 
             with torch.no_grad():
-                y_pred = float(model(graph_data).item())
+                y_pred = float(torch.clamp(model(graph_data), 0.0, 1.0).item())
             t_inference_end = time.time()
 
             total_time = (t_feature_end - t_feature_start) + (t_inference_end - t_inference_start)
