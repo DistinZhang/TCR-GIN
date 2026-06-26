@@ -22,6 +22,15 @@ The local URL is usually `http://localhost:8501`.
 5. Deploy or reboot the app. Streamlit Cloud installs dependencies from
    `webapp/requirements.txt` because the entry file is inside `webapp/`.
 
+Current public deployment:
+
+```text
+https://tcr-gin-early-warning.streamlit.app/
+```
+
+The repository also includes a short walkthrough recording at
+`webapp/assets/tcr-gin-early-warning.mp4`.
+
 Large local model directories are usually not suitable for Streamlit Cloud
 uploads. This repository keeps only the small transport-demo checkpoints under
 `webapp/examples/transport_demo/`; larger training checkpoints and result

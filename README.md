@@ -20,7 +20,11 @@ Repository:
 https://github.com/DistinZhang/TCR-GIN
 ```
 
-![TCR-GIN overview](assets/overview.png)
+![TCR-GIN conceptual workflow](webapp/assets/home_concept.png)
+
+Conceptual illustration of the early-warning workflow. Visual elements are
+schematic and do not represent quantitative outputs. Image generated with GPT
+Image 2.
 
 This repository implements Topology-Consistency Regularized Graph Isomorphism
 Network (TCR-GIN), a physics-informed graph learning framework for estimating
@@ -54,8 +58,8 @@ methods.
 
 - **Code**: `https://github.com/DistinZhang/TCR-GIN`
 - **Data, models, and results**: `https://doi.org/10.5281/zenodo.20287619`
-- **Interactive demo**: deploy from `webapp/app.py`; add the public Streamlit
-  URL here after deployment.
+- **Interactive demo**: `https://tcr-gin-early-warning.streamlit.app/`
+- **Demo video**: `webapp/assets/tcr-gin-early-warning.mp4`
 - **Citation**: use `CITATION.cff` and cite the associated manuscript and
   Zenodo record.
 
@@ -297,8 +301,9 @@ Figures/
 └── figure_7.pdf
 ```
 
-The lightweight overview image shown at the top of this README is derived from
-`Figures/figure_1.pdf` and stored as `assets/overview.png` for GitHub rendering.
+The README hero image is `webapp/assets/home_concept.png`, a schematic
+conceptual illustration for the public demo landing page. The manuscript source
+figure files remain in `Figures/`.
 
 ## Interactive web application
 
@@ -315,6 +320,18 @@ The app includes a bundled transport demo under
 `webapp/examples/transport_demo/`. On the **Network Setup** page, click **Load
 Transport Demo** to load the sample network, model checkpoints, and YAML config
 without downloading external data.
+
+Public Streamlit deployment:
+
+```text
+https://tcr-gin-early-warning.streamlit.app/
+```
+
+Recorded walkthrough:
+
+```text
+webapp/assets/tcr-gin-early-warning.mp4
+```
 
 ### Start locally
 
