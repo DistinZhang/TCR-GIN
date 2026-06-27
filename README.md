@@ -159,16 +159,16 @@ During development the external archive was staged under a layout equivalent to:
 ```text
 autodl-tmp/
 ├── split/              # Main train/valid/test graph-sample splits
-├── split-exact/        # Exact-label comparison datasets and result tables
+├── split-exact/        # Exact-label comparison datasets
 ├── split_111/          # Early-warning split for the transport tau=0.3 setting
 ├── split_185/          # Early-warning split for the transport tau=0.5 setting
 ├── split_353/          # Early-warning split for the power tau=0.3 setting
 ├── split_588/          # Early-warning split for the power tau=0.5 setting
-├── data_synth/         # Synthetic-network baseline/result artifacts
-├── data_real/          # Real-network artifacts, including REDDIT outputs
+├── data_synth/         # Synthetic-network artifacts
+├── data_real/          # Real-network artifacts
 ├── data_trajectory/    # Trajectory-analysis datasets and summaries
-├── data_metric/        # Early-warning metric datasets
-└── profile/            # Collapse-profile datasets and outputs
+├── data_metric/        # Early-warning datasets
+└── profile/            # Collapse-profile datasets
 
 models/                 # Trained checkpoint hierarchy
 experiments/             # Generated experiment outputs staged outside code
