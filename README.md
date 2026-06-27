@@ -152,29 +152,39 @@ intermediate artifacts used to reproduce the manuscript are available from
 
 The manuscript Data Availability statement points to the same record.
 
-After downloading the external archive, unpack it next to this repository or
-place it at the paths expected by the YAML configuration files and `run.sh`.
-During development the external archive was staged under a layout equivalent to:
+The GitHub repository is the script-focused public code release. The Zenodo
+archive preserves a complete release snapshot: the external datasets are stored
+under `data/`, while the code, retained model checkpoints, generated experiment
+outputs, Streamlit app assets, and documentation are stored together under
+`TCR-GIN/`. After downloading the archive, unpack it as a single archive root or
+update the relevant YAML files and `run.sh` paths to match your local layout.
 
 ```text
-autodl-tmp/
-├── split/              # Main train/valid/test graph-sample splits
-├── split-exact/        # Exact-label comparison datasets
-├── split_111/          # Early-warning split for the transport tau=0.3 setting
-├── split_185/          # Early-warning split for the transport tau=0.5 setting
-├── split_353/          # Early-warning split for the power tau=0.3 setting
-├── split_588/          # Early-warning split for the power tau=0.5 setting
-├── data_synth/         # Synthetic-network artifacts
-├── data_real/          # Real-network artifacts
-├── data_trajectory/    # Trajectory-analysis datasets and summaries
-├── data_metric/        # Early-warning datasets
-└── profile/            # Collapse-profile datasets
-
-models/                 # Trained checkpoint hierarchy
-experiments/             # Generated experiment outputs staged outside code
-checksums_sha256.txt     # Archive integrity checks
-MANIFEST.md              # Archive layout description
-THIRD_PARTY_SOURCES.md   # Third-party source and license notes
+zenodo/
+├── data/
+│   ├── split/           # Graph splits
+│   ├── split-exact/     # Exact-label data
+│   ├── split_111/       # Transport tau=0.3
+│   ├── split_185/       # Transport tau=0.5
+│   ├── split_353/       # Power tau=0.3
+│   ├── split_588/       # Power tau=0.5
+│   ├── data_synth/      # Synthetic data
+│   ├── data_real/       # Real data
+│   ├── data_trajectory/ # Trajectory data
+│   ├── data_metric/     # Metric data
+│   └── profile/         # Profile data
+├── TCR-GIN/
+│   ├── configs/         # Config files
+│   ├── experiments/     # Scripts and outputs
+│   ├── model/           # Model code
+│   ├── models/          # Checkpoints
+│   ├── utils/           # Utility scripts
+│   ├── webapp/          # Streamlit app
+│   └── README.md        # Usage guide
+├── MANIFEST.md          # File inventory
+├── THIRD_PARTY_SOURCES.md
+├── CITATION.cff
+└── checksums_sha256.txt
 ```
 
 If your local directory structure differs, update the relevant paths in:
@@ -418,8 +428,9 @@ When multiple runs are present in one segment, the webapp selects
 
 - Set random seeds in YAML files where supported.
 - GPU determinism may vary across CUDA, cuDNN, PyTorch, and driver versions.
-- Some exact-label and dismantling computations are expensive; the repository
-  therefore separates source code from the large external data/model archive.
+- Some exact-label and dismantling computations are expensive; GitHub keeps a
+  script-focused code release, while Zenodo preserves the complete data,
+  checkpoint, result, and app snapshot.
 - Path assumptions in older experiment commands may reflect the original server
   layout. Update YAML files and `run.sh` paths if your data archive is unpacked
   elsewhere.
