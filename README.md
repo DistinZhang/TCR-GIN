@@ -56,7 +56,7 @@ methods.
 - **Code**: [GitHub repository](https://github.com/DistinZhang/TCR-GIN)
 - **Complete experimental package**: [Zenodo archive](https://doi.org/10.5281/zenodo.20287619)
 - **Interactive demo**: [tcr-gin-early-warning.streamlit.app](https://tcr-gin-early-warning.streamlit.app/)
-- **Demo video**: [GitHub attachment](https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0)
+- **Demo video**: [GitHub attachment](https://github.com/user-attachments/assets/48f8d823-1c47-4384-8a0a-8692727953ed)
 - **Citation**: use `CITATION.cff` and cite the associated manuscript and
   Zenodo record.
 
@@ -324,9 +324,9 @@ without downloading external data.
 
 Public Streamlit deployment: [tcr-gin-early-warning.streamlit.app](https://tcr-gin-early-warning.streamlit.app/)
 
-Recorded walkthrough: [GitHub attachment](https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0)
+Recorded walkthrough: [GitHub attachment](https://github.com/user-attachments/assets/48f8d823-1c47-4384-8a0a-8692727953ed)
 
-An archival copy is stored at [`webapp/assets/tcr-gin-early-warning.mp4`](webapp/assets/tcr-gin-early-warning.mp4).
+An archival copy is stored at [`webapp/assets/Supplementary Movie - Step-by-step early warning of network breakdown with collapse distance.mp4`](webapp/assets/Supplementary Movie - Step-by-step early warning of network breakdown with collapse distance.mp4).
 
 ### Start locally
 

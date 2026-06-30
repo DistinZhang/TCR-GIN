@@ -4,9 +4,9 @@ This Streamlit application provides early warning for network structural collaps
 
 Public deployment: [tcr-gin-early-warning.streamlit.app](https://tcr-gin-early-warning.streamlit.app/)
 
-Walkthrough recording: [GitHub attachment](https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0)
+Walkthrough recording: [GitHub attachment](https://github.com/user-attachments/assets/48f8d823-1c47-4384-8a0a-8692727953ed)
 
-An archival copy is stored at [`assets/tcr-gin-early-warning.mp4`](assets/tcr-gin-early-warning.mp4).
+An archival copy is stored at [`assets/Supplementary Movie - Step-by-step early warning of network breakdown with collapse distance.mp4`](assets/Supplementary Movie - Step-by-step early warning of network breakdown with collapse distance.mp4).
 
 ## What It Does
 
