@@ -21,7 +21,7 @@ Image 2.
 
 ## Demo video
 
-<video src="webapp/assets/Supplementary Movie | Step-by-step：early warning of network breakdown with collapse distance.mp4" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/48f8d823-1c47-4384-8a0a-8692727953ed" controls width="100%"></video>
 
 This repository implements Topology-Consistency Regularized Graph Isomorphism
 Network (TCR-GIN), a physics-informed graph learning framework for estimating
