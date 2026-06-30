@@ -21,9 +21,7 @@ Image 2.
 
 ## Demo video
 
-[![TCR-GIN demo video](webapp/assets/demo_video_preview.png)](webapp/assets/tcr-gin-early-warning.mp4)
-
-Click the preview to open the demo video.
+<video src="webapp/assets/tcr-gin-early-warning-readme.mp4" controls width="100%"></video>
 
 This repository implements Topology-Consistency Regularized Graph Isomorphism
 Network (TCR-GIN), a physics-informed graph learning framework for estimating
