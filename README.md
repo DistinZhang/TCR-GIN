@@ -6,8 +6,7 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-demo-ff4b4b.svg)](webapp/)
 
 
-**Physics-informed graph learning of collapse distance reveals early-warning
-signals of breakdown in complex networks**
+**Physics-informed graph learning of collapse distance in complex networks**
 
 Jie Zhang, Tao Wang, Yatai Ji, Hua He, Zhengqiu Zhu, Boquan Zhang, Xin Zhou, Changjun Fan,
 Bin Chen, Manlio De Domenico, and Xin Lu.
@@ -22,7 +21,9 @@ Image 2.
 
 ## Demo video
 
-https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0
+[![TCR-GIN demo video](webapp/assets/demo_video_preview.png)](webapp/assets/tcr-gin-early-warning.mp4)
+
+Click the preview to open the demo video.
 
 This repository implements Topology-Consistency Regularized Graph Isomorphism
 Network (TCR-GIN), a physics-informed graph learning framework for estimating
@@ -55,7 +56,7 @@ methods.
 ## Quick links
 
 - **Code**: [GitHub repository](https://github.com/DistinZhang/TCR-GIN)
-- **Data, models, and results**: [Zenodo archive](https://doi.org/10.5281/zenodo.20287619)
+- **Complete experimental package**: [Zenodo archive](https://doi.org/10.5281/zenodo.20287619)
 - **Interactive demo**: [tcr-gin-early-warning.streamlit.app](https://tcr-gin-early-warning.streamlit.app/)
 - **Demo video**: [GitHub attachment](https://github.com/user-attachments/assets/74c7df14-a7b1-4e77-aa08-b13fcc22cfe0)
 - **Citation**: use `CITATION.cff` and cite the associated manuscript and

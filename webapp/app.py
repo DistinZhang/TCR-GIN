@@ -18,7 +18,7 @@ from webapp.navigation import (  # noqa: E402
 )
 
 
-APP_NAME = "Early Warning System for Network Structural Collapse"
+APP_NAME = "Step-by-step: early warning of network breakdown with collapse distance"
 HOME_CONCEPT_IMAGE = Path(__file__).resolve().parent / "assets" / "home_concept.png"
 
 

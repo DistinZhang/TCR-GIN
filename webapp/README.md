@@ -1,4 +1,4 @@
-# Early Warning System for Network Structural Collapse
+# Step-by-step: early warning of network breakdown with collapse distance
 
 This Streamlit application provides early warning for network structural collapse under node-removal attacks, powered by TCR-GIN. It is designed for local analysis, reproducible demos, and GitHub release with the early-warning experiments.
 
