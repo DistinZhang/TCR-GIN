@@ -19,10 +19,6 @@ Conceptual illustration of the early-warning workflow. Visual elements are
 schematic and do not represent quantitative outputs. Image generated with GPT
 Image 2.
 
-## Demo video
-
-<video src="https://github.com/user-attachments/assets/48f8d823-1c47-4384-8a0a-8692727953ed" controls width="100%"></video>
-
 This repository implements Topology-Consistency Regularized Graph Isomorphism
 Network (TCR-GIN), a physics-informed graph learning framework for estimating
 collapse distance in complex networks. Collapse distance is a configurable
@@ -37,6 +33,10 @@ Supplementary Information. The manuscript reports synthetic-network benchmarks,
 real-world network tests, trajectory-property analyses, early-warning
 experiments, collapse-profile prediction, and comparisons against 28 baseline
 methods.
+
+## Demo video
+
+<video src="https://github.com/user-attachments/assets/48f8d823-1c47-4384-8a0a-8692727953ed" controls width="100%"></video>
 
 ## Contents
 
