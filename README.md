@@ -65,7 +65,6 @@ methods.
 ```text
 TCR-GIN/
 ├── Figures/                      # Main manuscript figures in PDF format
-├── assets/                       # Lightweight README/project-page assets
 ├── arguments.py                  # Core scalar TCR-GIN argument parser
 ├── data_loader.py                # Graph triplet loading and dataloader logic
 ├── train_piss.py                 # Core training routine
